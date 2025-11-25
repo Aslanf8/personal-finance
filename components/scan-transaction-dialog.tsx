@@ -262,7 +262,7 @@ export function ScanTransactionDialog({ onScanComplete, children }: ScanTransact
                 </div>
               ) : (
                 <div className="relative aspect-[4/3] bg-black rounded-lg overflow-hidden">
-                  {/* @ts-expect-error React 19 type compatibility issue with react-webcam */}
+                  {/* @ts-ignore React 19 type compatibility issue with react-webcam */}
                   <Webcam
                     ref={webcamRef}
                     audio={false}
