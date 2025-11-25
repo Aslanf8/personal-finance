@@ -1,12 +1,14 @@
 import { createClient } from "@/lib/supabase/server";
 import { DashboardCharts } from "@/components/dashboard-charts";
 import { AccountBreakdownChart } from "@/components/account-breakdown-chart";
+import { RecentTransactions } from "@/components/recent-transactions";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { NetWorthGoal } from "@/components/net-worth-goal";
 import { PeriodSelector } from "@/components/period-selector";
 import {
   type Period,
-  filterTransactionsByPeriod,
+  filterTransactionsWithRecurring,
+  expandRecurringTransactions,
   getPeriodLabel,
 } from "@/lib/period-utils";
 import YahooFinance from "yahoo-finance2";
@@ -88,14 +90,17 @@ export default async function DashboardPage({ searchParams }: PageProps) {
 
   const usdToCad = usdCadQuote.regularMarketPrice || 1.4;
 
-  // Filter transactions by selected period for metrics
-  const transactions = filterTransactionsByPeriod(
+  // Filter transactions by selected period for metrics (expands recurring)
+  const transactions = filterTransactionsWithRecurring(
     allTransactions || [],
     period
   );
 
-  // All-time transactions for cash balance calculation
-  const allTimeTransactions = allTransactions || [];
+  // All-time transactions for cash balance calculation (expanded recurring transactions)
+  const allTimeTransactions = expandRecurringTransactions(
+    allTransactions || [],
+    new Date()
+  );
 
   const priceMap = (prices || []).reduce(
     (acc, p) => ({
@@ -174,9 +179,9 @@ export default async function DashboardPage({ searchParams }: PageProps) {
     periodIncome > 0 ? (periodSavings / periodIncome) * 100 : 0;
 
   // Recent transactions - sorted by date (most recent first)
-  const recentTransactions = [...(allTimeTransactions || [])]
-    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
-    .slice(0, 8);
+  const recentTransactions = [...(allTimeTransactions || [])].sort(
+    (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+  );
 
   const periodLabel = getPeriodLabel(period);
 
@@ -401,54 +406,11 @@ export default async function DashboardPage({ searchParams }: PageProps) {
             />
           </CardContent>
         </Card>
-        <Card className="col-span-3">
-          <CardHeader>
-            <CardTitle>Recent Transactions 🇨🇦</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {recentTransactions.map((t) => (
-                <div key={t.id} className="flex items-center">
-                  <div className="space-y-1 min-w-0 flex-1">
-                    <div className="flex items-center gap-2">
-                      <p className="text-sm font-medium leading-none truncate">
-                        {t.description}
-                      </p>
-                      {t.is_recurring && (
-                        <span className="text-[10px] bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded-full flex-shrink-0">
-                          Monthly
-                        </span>
-                      )}
-                    </div>
-                    <p className="text-xs text-muted-foreground">
-                      {new Date(t.date).toLocaleDateString("en-CA", {
-                        month: "short",
-                        day: "numeric",
-                      })}{" "}
-                      • {t.category}
-                    </p>
-                  </div>
-                  <div
-                    className={`ml-2 font-medium flex-shrink-0 ${
-                      t.type === "income" ? "text-green-600" : "text-red-600"
-                    }`}
-                  >
-                    {t.type === "income" ? "+" : "-"}$
-                    {Number(t.amount).toLocaleString("en-CA")}{" "}
-                    <span className="text-sm">
-                      {t.currency === "USD" ? "🇺🇸" : "🇨🇦"}
-                    </span>
-                  </div>
-                </div>
-              ))}
-              {recentTransactions.length === 0 && (
-                <div className="text-muted-foreground text-sm">
-                  No recent transactions.
-                </div>
-              )}
-            </div>
-          </CardContent>
-        </Card>
+        <RecentTransactions
+          transactions={recentTransactions}
+          initialCount={8}
+          loadMoreCount={10}
+        />
       </div>
 
       <Card>

@@ -89,6 +89,24 @@ export interface Transaction {
   currency: 'CAD' | 'USD';
 }
 
+// Scan Receipt Types
+export interface ScannedTransaction {
+  amount: number;
+  description: string;
+  category: string;
+  date: string;
+  type: 'income' | 'expense';
+  currency: 'CAD' | 'USD';
+}
+
+export interface ScanResult {
+  success: boolean;
+  transactions: ScannedTransaction[];
+  summary: string | null;
+  confidence: 'high' | 'medium' | 'low';
+  error?: string;
+}
+
 // Investment Types (existing, for reference)
 export interface Investment {
   id: string;

@@ -3,9 +3,12 @@ import { addTransaction } from "@/app/(dashboard)/transactions/actions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { ScanTransactionDialog } from "@/components/scan-transaction-dialog";
 import { useRef, useState } from "react";
+import { ScannedTransaction } from "@/lib/types";
+import { Scan } from "lucide-react";
 
-const EXPENSE_CATEGORIES = [
+export const EXPENSE_CATEGORIES = [
   "Housing",
   "Transport",
   "Food",
@@ -15,21 +18,59 @@ const EXPENSE_CATEGORIES = [
   "Saving",
   "Personal",
   "Entertainment",
+  "Credit",
   "Miscellaneous",
 ];
 
-const INCOME_CATEGORIES = ["Salary", "Bonus", "Investment", "Deposit", "Other"];
+export const INCOME_CATEGORIES = ["Salary", "Bonus", "Investment", "Deposit", "Other"];
 
 export function TransactionForm() {
   const formRef = useRef<HTMLFormElement>(null);
   const [type, setType] = useState<"expense" | "income">("expense");
   const [currency, setCurrency] = useState<"CAD" | "USD">("CAD");
   const [isRecurring, setIsRecurring] = useState(false);
+  
+  // Controlled form fields for scan integration
+  const [date, setDate] = useState(new Date().toISOString().split("T")[0]);
+  const [description, setDescription] = useState("");
+  const [category, setCategory] = useState("");
+  const [amount, setAmount] = useState("");
+
+  const resetForm = () => {
+    setDate(new Date().toISOString().split("T")[0]);
+    setDescription("");
+    setCategory("");
+    setAmount("");
+    setIsRecurring(false);
+    setType("expense");
+    setCurrency("CAD");
+  };
+
+  const handleScanComplete = (transactions: ScannedTransaction[]) => {
+    if (transactions.length > 0) {
+      const t = transactions[0];
+      setType(t.type);
+      setCurrency(t.currency);
+      setDate(t.date);
+      setDescription(t.description);
+      setCategory(t.category);
+      setAmount(t.amount.toString());
+      setIsRecurring(false);
+    }
+  };
 
   return (
     <div className="border p-4 rounded-lg bg-card text-card-foreground space-y-4">
       <div className="flex items-center justify-between">
-        <h3 className="font-semibold">Add Transaction</h3>
+        <div className="flex items-center gap-3">
+          <h3 className="font-semibold">Add Transaction</h3>
+          <ScanTransactionDialog onScanComplete={handleScanComplete}>
+            <Button variant="outline" size="sm" className="gap-1.5 h-8 text-xs">
+              <Scan className="h-3.5 w-3.5" />
+              Scan
+            </Button>
+          </ScanTransactionDialog>
+        </div>
         <div className="flex gap-2">
           <div className="flex gap-2 bg-muted p-1 rounded-lg">
             <button
@@ -89,8 +130,7 @@ export function TransactionForm() {
         ref={formRef}
         action={async (formData) => {
           await addTransaction(formData);
-          formRef.current?.reset();
-          setIsRecurring(false);
+          resetForm();
         }}
         className="grid gap-4 md:grid-cols-6 items-end"
       >
@@ -103,7 +143,8 @@ export function TransactionForm() {
             type="date"
             name="date"
             required
-            defaultValue={new Date().toISOString().split("T")[0]}
+            value={date}
+            onChange={(e) => setDate(e.target.value)}
           />
         </div>
 
@@ -113,6 +154,8 @@ export function TransactionForm() {
             name="description"
             placeholder={type === "expense" ? "Groceries" : "Paycheck"}
             required
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
           />
         </div>
 
@@ -122,7 +165,8 @@ export function TransactionForm() {
             name="category"
             className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
             required
-            defaultValue=""
+            value={category}
+            onChange={(e) => setCategory(e.target.value)}
           >
             <option value="" disabled>
               Select category
@@ -145,6 +189,8 @@ export function TransactionForm() {
             name="amount"
             placeholder="0.00"
             required
+            value={amount}
+            onChange={(e) => setAmount(e.target.value)}
           />
         </div>
 

@@ -354,15 +354,6 @@ export function NetWorthGoal({
       </div>
 
       {/* Motivational footer */}
-      <div className="mt-5 pt-4 border-t border-slate-200/60 text-center">
-        <p className="text-[10px] uppercase tracking-widest text-slate-400">
-          {overallProgress >= 100
-            ? "🏆 Goal Achieved!"
-            : overallProgress >= 50
-            ? "🔥 Halfway There!"
-            : "💪 Every Dollar Counts"}
-        </p>
-      </div>
     </div>
   );
 }

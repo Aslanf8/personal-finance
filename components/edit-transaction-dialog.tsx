@@ -18,7 +18,7 @@ import { Pencil } from "lucide-react"
 
 const EXPENSE_CATEGORIES = [
   "Housing", "Transport", "Food", "Utilities", "Insurance", 
-  "Healthcare", "Saving", "Personal", "Entertainment", "Miscellaneous"
+  "Healthcare", "Saving", "Personal", "Entertainment", "Credit", "Miscellaneous"
 ]
 
 const INCOME_CATEGORIES = [
