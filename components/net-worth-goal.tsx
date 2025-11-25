@@ -28,6 +28,15 @@ function getAge(birthday: Date): number {
   return age;
 }
 
+function getAgeAtDate(birthday: Date, targetDate: Date): number {
+  const age = targetDate.getFullYear() - birthday.getFullYear();
+  const m = targetDate.getMonth() - birthday.getMonth();
+  if (m < 0 || (m === 0 && targetDate.getDate() < birthday.getDate())) {
+    return age - 1;
+  }
+  return age;
+}
+
 function NoGoalState() {
   return (
     <div className="relative overflow-hidden rounded-xl border border-dashed border-slate-300 bg-gradient-to-br from-slate-50 to-slate-100/50 p-8">
@@ -157,6 +166,16 @@ export function NetWorthGoal({
                   month: "short",
                   year: "numeric",
                 })}
+                {birthday && (
+                  <span className="ml-1 text-amber-600 font-medium">
+                    (Age{" "}
+                    {getAgeAtDate(
+                      new Date(birthday),
+                      new Date(goal.target_date)
+                    )}
+                    )
+                  </span>
+                )}
               </span>
             )}
           </div>
@@ -242,6 +261,15 @@ export function NetWorthGoal({
                         "en-US",
                         { month: "short", year: "numeric" }
                       )}
+                      {birthday && (
+                        <span className="ml-1 text-amber-500 font-medium">
+                          · Age{" "}
+                          {getAgeAtDate(
+                            new Date(birthday),
+                            new Date(milestone.target_date)
+                          )}
+                        </span>
+                      )}
                     </p>
                   )}
                   {!milestone.isAchieved && (
@@ -303,6 +331,15 @@ export function NetWorthGoal({
                     month: "short",
                     year: "numeric",
                   })}
+                  {birthday && (
+                    <span className="ml-1 text-amber-500 font-medium">
+                      · Age{" "}
+                      {getAgeAtDate(
+                        new Date(birthday),
+                        new Date(goal.target_date)
+                      )}
+                    </span>
+                  )}
                 </p>
               )}
               {overallProgress < 100 && (
