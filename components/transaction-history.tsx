@@ -342,22 +342,22 @@ export function TransactionHistory({
 
         {/* Summary Stats */}
         {filteredTransactions.length > 0 && (
-          <div className="grid grid-cols-3 gap-3 mt-4">
-            <div className="p-3 rounded-lg bg-emerald-50 border border-emerald-100">
-              <div className="text-xs text-emerald-600 font-medium">Income</div>
-              <div className="text-lg font-bold text-emerald-700">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-3 mt-4">
+            <div className="flex items-center justify-between sm:flex-col sm:items-start p-3 rounded-lg bg-muted/40 border border-border/40">
+              <div className="text-xs text-muted-foreground font-medium">Income</div>
+              <div className="text-base sm:text-lg font-semibold text-emerald-600/80">
                 +${totals.income.toLocaleString("en-CA", { minimumFractionDigits: 2 })}
               </div>
             </div>
-            <div className="p-3 rounded-lg bg-red-50 border border-red-100">
-              <div className="text-xs text-red-600 font-medium">Expenses</div>
-              <div className="text-lg font-bold text-red-700">
+            <div className="flex items-center justify-between sm:flex-col sm:items-start p-3 rounded-lg bg-muted/40 border border-border/40">
+              <div className="text-xs text-muted-foreground font-medium">Expenses</div>
+              <div className="text-base sm:text-lg font-semibold text-red-500/80">
                 -${totals.expense.toLocaleString("en-CA", { minimumFractionDigits: 2 })}
               </div>
             </div>
-            <div className={`p-3 rounded-lg ${totals.net >= 0 ? "bg-blue-50 border border-blue-100" : "bg-orange-50 border border-orange-100"}`}>
-              <div className={`text-xs font-medium ${totals.net >= 0 ? "text-blue-600" : "text-orange-600"}`}>Net</div>
-              <div className={`text-lg font-bold ${totals.net >= 0 ? "text-blue-700" : "text-orange-700"}`}>
+            <div className="flex items-center justify-between sm:flex-col sm:items-start p-3 rounded-lg bg-muted/40 border border-border/40">
+              <div className="text-xs text-muted-foreground font-medium">Net</div>
+              <div className={`text-base sm:text-lg font-semibold ${totals.net >= 0 ? "text-foreground" : "text-muted-foreground"}`}>
                 {totals.net >= 0 ? "+" : "-"}${Math.abs(totals.net).toLocaleString("en-CA", { minimumFractionDigits: 2 })}
               </div>
             </div>
