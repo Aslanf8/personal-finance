@@ -21,6 +21,7 @@ import {
   Menu,
   Wallet,
   LogOut,
+  Settings,
 } from "lucide-react";
 
 interface NavItem {
@@ -44,6 +45,11 @@ const navItems: NavItem[] = [
     title: "Investments",
     href: "/investments",
     icon: TrendingUp,
+  },
+  {
+    title: "Settings",
+    href: "/settings",
+    icon: Settings,
   },
 ];
 

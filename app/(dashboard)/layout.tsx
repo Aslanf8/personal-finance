@@ -14,5 +14,18 @@ export default async function DashboardLayout({
     redirect('/login')
   }
 
-  return <DashboardShell user={user}>{children}</DashboardShell>
+  // Check if user needs onboarding
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('onboarding_completed')
+    .eq('id', user.id)
+    .single()
+
+  const needsOnboarding = !profile?.onboarding_completed
+
+  return (
+    <DashboardShell user={user} needsOnboarding={needsOnboarding}>
+      {children}
+    </DashboardShell>
+  )
 }

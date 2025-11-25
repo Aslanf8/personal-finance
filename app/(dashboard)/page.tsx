@@ -23,10 +23,17 @@ export default async function DashboardPage({ searchParams }: PageProps) {
   const supabase = await createClient();
   const yahooFinance = new YahooFinance({ suppressNotices: ["yahooSurvey"] });
 
+  // Get user for profile data
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
   const [
     { data: allTransactions },
     { data: investments },
     { data: prices },
+    profileResult,
+    primaryGoalResult,
     usdCadQuote,
   ] = await Promise.all([
     supabase
@@ -35,8 +42,49 @@ export default async function DashboardPage({ searchParams }: PageProps) {
       .order("date", { ascending: true }),
     supabase.from("investments").select("*"),
     supabase.from("market_prices").select("*"),
+    supabase
+      .from("profiles")
+      .select("*")
+      .eq("id", user?.id || "")
+      .single(),
+    supabase
+      .from("financial_goals")
+      .select("*")
+      .eq("user_id", user?.id || "")
+      .eq("is_primary", true)
+      .single(),
     yahooFinance.quote("CAD=X").catch(() => ({ regularMarketPrice: 1.4 })),
   ]);
+
+  const profile = profileResult.data;
+  const primaryGoal = primaryGoalResult.data;
+
+  // Fetch milestones for primary goal if it exists
+  let milestones: {
+    id: string;
+    goal_id: string;
+    name: string;
+    target_amount: number;
+    target_date: string | null;
+    is_achieved: boolean;
+    display_order: number;
+  }[] = [];
+  if (primaryGoal) {
+    const { data: milestonesData } = await supabase
+      .from("goal_milestones")
+      .select("*")
+      .eq("goal_id", primaryGoal.id)
+      .order("display_order", { ascending: true });
+    milestones = (milestonesData || []).map((m) => ({
+      id: m.id,
+      goal_id: m.goal_id,
+      name: m.name,
+      target_amount: Number(m.target_amount),
+      target_date: m.target_date,
+      is_achieved: m.is_achieved,
+      display_order: m.display_order || 0,
+    }));
+  }
 
   const usdToCad = usdCadQuote.regularMarketPrice || 1.4;
 
@@ -132,10 +180,66 @@ export default async function DashboardPage({ searchParams }: PageProps) {
 
   const periodLabel = getPeriodLabel(period);
 
+  // Transform goal for component
+  const goalForComponent = primaryGoal
+    ? {
+        id: primaryGoal.id,
+        user_id: primaryGoal.user_id,
+        created_at: primaryGoal.created_at,
+        updated_at: primaryGoal.updated_at,
+        name: primaryGoal.name,
+        description: primaryGoal.description,
+        target_amount: Number(primaryGoal.target_amount),
+        target_date: primaryGoal.target_date,
+        target_age: primaryGoal.target_age,
+        is_primary: primaryGoal.is_primary,
+        is_achieved: primaryGoal.is_achieved,
+        achieved_at: primaryGoal.achieved_at,
+        display_order: primaryGoal.display_order || 0,
+        goal_type: primaryGoal.goal_type as
+          | "net_worth"
+          | "savings"
+          | "investment"
+          | "custom",
+        color: primaryGoal.color as
+          | "amber"
+          | "emerald"
+          | "blue"
+          | "purple"
+          | "rose"
+          | "orange",
+      }
+    : null;
+
+  // Transform milestones for component
+  const milestonesForComponent = milestones.map((m) => ({
+    id: m.id,
+    goal_id: m.goal_id,
+    user_id: primaryGoal?.user_id || "",
+    created_at: "",
+    name: m.name,
+    target_amount: m.target_amount,
+    target_date: m.target_date,
+    display_order: m.display_order,
+    is_achieved: m.is_achieved,
+    achieved_at: null,
+  }));
+
   return (
     <div className="flex flex-col gap-4">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <h1 className="text-lg font-semibold md:text-2xl">Dashboard</h1>
+        <div>
+          <h1 className="text-lg font-semibold md:text-2xl">
+            {profile?.full_name
+              ? `Welcome back, ${profile.full_name.split(" ")[0]}`
+              : "Dashboard"}
+          </h1>
+          {profile?.full_name && (
+            <p className="text-sm text-muted-foreground">
+              Here&apos;s your financial overview
+            </p>
+          )}
+        </div>
         <Suspense
           fallback={
             <div className="h-10 w-80 bg-muted rounded-lg animate-pulse" />
@@ -145,8 +249,13 @@ export default async function DashboardPage({ searchParams }: PageProps) {
         </Suspense>
       </div>
 
-      {/* Net Worth Goal Tracker */}
-      <NetWorthGoal currentNetWorth={netWorth} />
+      {/* Net Worth Goal Tracker - Now with dynamic data */}
+      <NetWorthGoal
+        currentNetWorth={netWorth}
+        goal={goalForComponent}
+        milestones={milestonesForComponent}
+        birthday={profile?.birthday || null}
+      />
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Card>

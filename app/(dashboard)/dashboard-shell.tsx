@@ -1,6 +1,7 @@
 'use client'
 
 import { Sidebar, SidebarProvider, MobileSidebarTrigger } from '@/components/sidebar'
+import { OnboardingDialog } from '@/components/onboarding-dialog'
 import { User } from '@supabase/supabase-js'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
@@ -8,9 +9,10 @@ import { useRouter } from 'next/navigation'
 interface DashboardShellProps {
   children: React.ReactNode
   user: User
+  needsOnboarding?: boolean
 }
 
-export function DashboardShell({ children, user }: DashboardShellProps) {
+export function DashboardShell({ children, user, needsOnboarding = false }: DashboardShellProps) {
   const router = useRouter()
   const supabase = createClient()
 
@@ -52,6 +54,9 @@ export function DashboardShell({ children, user }: DashboardShellProps) {
           </main>
         </div>
       </div>
+
+      {/* Onboarding Dialog for new users */}
+      <OnboardingDialog open={needsOnboarding} />
     </SidebarProvider>
   )
 }
