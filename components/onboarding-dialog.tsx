@@ -63,7 +63,12 @@ export function OnboardingDialog({ open }: OnboardingDialogProps) {
 
   return (
     <Dialog open={open}>
-      <DialogContent className="sm:max-w-lg" onPointerDownOutside={(e) => e.preventDefault()}>
+      <DialogContent 
+        className="sm:max-w-lg [&>button]:hidden" 
+        onPointerDownOutside={(e) => e.preventDefault()}
+        onEscapeKeyDown={(e) => e.preventDefault()}
+        onInteractOutside={(e) => e.preventDefault()}
+      >
         {step === "welcome" && (
           <>
             <DialogHeader className="text-center">

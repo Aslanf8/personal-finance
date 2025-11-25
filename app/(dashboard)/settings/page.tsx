@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import { SettingsContent } from "./settings-content";
+import type { GoalMilestone } from "@/lib/types";
 
 export default async function SettingsPage() {
   const supabase = await createClient();
@@ -25,7 +26,7 @@ export default async function SettingsPage() {
 
   // Fetch milestones for all goals
   const goals = goalsResult.data || [];
-  let milestonesMap: Record<string, typeof goalsResult.data> = {};
+  let milestonesMap: Record<string, GoalMilestone[]> = {};
 
   if (goals.length > 0) {
     const goalIds = goals.map((g) => g.id);
@@ -37,9 +38,9 @@ export default async function SettingsPage() {
 
     milestonesMap = (milestones || []).reduce((acc, m) => {
       if (!acc[m.goal_id]) acc[m.goal_id] = [];
-      acc[m.goal_id].push(m);
+      acc[m.goal_id].push(m as GoalMilestone);
       return acc;
-    }, {} as Record<string, typeof milestones>);
+    }, {} as Record<string, GoalMilestone[]>);
   }
 
   return (
