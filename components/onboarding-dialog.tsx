@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Dialog,
   DialogContent,
@@ -17,12 +17,23 @@ import { Rocket, User, Target, Sparkles } from "lucide-react";
 
 interface OnboardingDialogProps {
   open: boolean;
+  onOpenChange?: (open: boolean) => void;
 }
 
 type Step = "welcome" | "profile" | "goal" | "complete";
 
-export function OnboardingDialog({ open }: OnboardingDialogProps) {
+export function OnboardingDialog({ open, onOpenChange }: OnboardingDialogProps) {
   const [step, setStep] = useState<Step>("welcome");
+  const [isOpen, setIsOpen] = useState(open);
+
+  useEffect(() => {
+    setIsOpen(open);
+  }, [open]);
+
+  const handleOpenChange = (newOpen: boolean) => {
+    setIsOpen(newOpen);
+    onOpenChange?.(newOpen);
+  };
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     full_name: "",
@@ -62,13 +73,8 @@ export function OnboardingDialog({ open }: OnboardingDialogProps) {
   };
 
   return (
-    <Dialog open={open}>
-      <DialogContent 
-        className="sm:max-w-lg [&>button]:hidden" 
-        onPointerDownOutside={(e) => e.preventDefault()}
-        onEscapeKeyDown={(e) => e.preventDefault()}
-        onInteractOutside={(e) => e.preventDefault()}
-      >
+    <Dialog open={isOpen} onOpenChange={handleOpenChange}>
+      <DialogContent className="sm:max-w-lg">
         {step === "welcome" && (
           <>
             <DialogHeader className="text-center">
