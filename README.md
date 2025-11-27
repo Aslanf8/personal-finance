@@ -1,6 +1,6 @@
-# Personal Finance Hub 🇨🇦
+# OpenFinance 🇨🇦
 
-A private, customizable personal finance tracker built for Canadians who want full control over their financial data. Track your income, expenses, investments, real estate, vehicles, liabilities, and complete net worth — all in one place.
+A private, customizable finance tracker built for Canadians who want full control over their financial data. Track your income, expenses, investments, real estate, vehicles, liabilities, and complete net worth — all in one place.
 
 ## Why This Exists
 

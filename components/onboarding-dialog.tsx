@@ -85,7 +85,7 @@ export function OnboardingDialog({
                 <Rocket className="h-8 w-8 text-white" />
               </div>
               <DialogTitle className="text-2xl">
-                Welcome to FinanceHub! 🎉
+                Welcome to OpenFinance! 🎉
               </DialogTitle>
               <DialogDescription className="text-base">
                 Your personal finance command center. Let&apos;s set up your

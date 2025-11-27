@@ -25,7 +25,7 @@ export default function LoginPage({
               <Wallet className="h-6 w-6 text-white" />
             </div>
           </div>
-          <CardTitle className="text-2xl font-bold">FinanceHub</CardTitle>
+          <CardTitle className="text-2xl font-bold">OpenFinance</CardTitle>
           <CardDescription>Sign in to access your dashboard</CardDescription>
         </CardHeader>
         <form>

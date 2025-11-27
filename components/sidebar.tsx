@@ -180,10 +180,10 @@ function SidebarContent({
           {!effectiveCollapsed && (
             <div className="flex flex-col overflow-hidden">
               <span className="truncate text-base font-bold tracking-tight">
-                FinanceHub
+                OpenFinance
               </span>
               <span className="truncate text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
-                Personal Finance
+                Your Money, Your Way
               </span>
             </div>
           )}

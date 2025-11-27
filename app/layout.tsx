@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Personal Finance Dashboard",
+  title: "OpenFinance",
   description: "Track your income, expenses, and investments.",
   icons: {
     icon: "/icon.svg",

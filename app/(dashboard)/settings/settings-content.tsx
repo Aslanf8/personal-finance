@@ -33,7 +33,6 @@ import { GOAL_COLORS, GOAL_TYPES } from "@/lib/types";
 import {
   User,
   Target,
-  Calendar,
   Plus,
   Trash2,
   Edit2,
@@ -41,7 +40,9 @@ import {
   Check,
   X,
   Milestone,
+  Building2,
 } from "lucide-react";
+import { ConnectedAccounts } from "@/components/plaid";
 
 interface SettingsContentProps {
   profile: UserProfile | null;
@@ -174,501 +175,535 @@ export function SettingsContent({
   };
 
   return (
-    <div className="grid gap-6 lg:grid-cols-2">
-      {/* Profile Section */}
+    <div className="space-y-6">
+      {/* Connected Bank Accounts Section */}
       <Card>
         <CardHeader>
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-emerald-500/20 to-teal-600/20">
-                <User className="h-5 w-5 text-emerald-600" />
-              </div>
-              <div>
-                <CardTitle>Profile</CardTitle>
-                <CardDescription>Your personal information</CardDescription>
-              </div>
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500/20 to-indigo-600/20">
+              <Building2 className="h-5 w-5 text-blue-600" />
             </div>
-            {!isEditingProfile && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setIsEditingProfile(true)}
-              >
-                <Edit2 className="h-4 w-4" />
-              </Button>
-            )}
+            <div>
+              <CardTitle>Connected Accounts</CardTitle>
+              <CardDescription>
+                Link your bank accounts to automatically import transactions
+              </CardDescription>
+            </div>
           </div>
         </CardHeader>
         <CardContent>
-          {isEditingProfile ? (
-            <form onSubmit={handleProfileSubmit} className="space-y-4">
-              <div className="grid gap-2">
-                <Label htmlFor="full_name">Display Name</Label>
-                <Input
-                  id="full_name"
-                  name="full_name"
-                  defaultValue={profile?.full_name || ""}
-                  placeholder="Your name"
-                />
-              </div>
-
-              <div className="grid gap-2">
-                <Label htmlFor="birthday">Birthday</Label>
-                <Input
-                  id="birthday"
-                  name="birthday"
-                  type="date"
-                  defaultValue={profile?.birthday || ""}
-                />
-                {profile?.birthday && (
-                  <p className="text-xs text-muted-foreground">
-                    Current age: {getAge(profile.birthday)} years old
-                  </p>
-                )}
-              </div>
-
-              <div className="grid gap-2">
-                <Label htmlFor="currency">Preferred Currency</Label>
-                <select
-                  id="currency"
-                  name="currency"
-                  defaultValue={profile?.currency || "CAD"}
-                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                >
-                  <option value="CAD">🇨🇦 CAD - Canadian Dollar</option>
-                  <option value="USD">🇺🇸 USD - US Dollar</option>
-                </select>
-              </div>
-
-              <div className="flex gap-2 pt-2">
-                <Button type="submit" disabled={loading}>
-                  {loading ? "Saving..." : "Save Changes"}
-                </Button>
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => setIsEditingProfile(false)}
-                >
-                  Cancel
-                </Button>
-              </div>
-            </form>
-          ) : (
-            <div className="space-y-4">
-              <div className="flex items-center justify-between py-2">
-                <span className="text-sm text-muted-foreground">Email</span>
-                <span className="text-sm font-medium">{userEmail}</span>
-              </div>
-              <Separator />
-              <div className="flex items-center justify-between py-2">
-                <span className="text-sm text-muted-foreground">Name</span>
-                <span className="text-sm font-medium">
-                  {profile?.full_name || "Not set"}
-                </span>
-              </div>
-              <Separator />
-              <div className="flex items-center justify-between py-2">
-                <span className="text-sm text-muted-foreground">Birthday</span>
-                <span className="text-sm font-medium">
-                  {profile?.birthday
-                    ? `${new Date(
-                        profile.birthday
-                      ).toLocaleDateString()} (Age ${getAge(profile.birthday)})`
-                    : "Not set"}
-                </span>
-              </div>
-              <Separator />
-              <div className="flex items-center justify-between py-2">
-                <span className="text-sm text-muted-foreground">Currency</span>
-                <span className="text-sm font-medium">
-                  {profile?.currency === "USD" ? "🇺🇸 USD" : "🇨🇦 CAD"}
-                </span>
-              </div>
-            </div>
-          )}
+          <ConnectedAccounts />
         </CardContent>
       </Card>
 
-      {/* Goals Section */}
-      <div className="space-y-4">
+      <div className="grid gap-6 lg:grid-cols-2">
+        {/* Profile Section */}
         <Card>
           <CardHeader>
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-amber-500/20 to-orange-600/20">
-                  <Target className="h-5 w-5 text-amber-600" />
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-emerald-500/20 to-teal-600/20">
+                  <User className="h-5 w-5 text-emerald-600" />
                 </div>
                 <div>
-                  <CardTitle>Financial Goals</CardTitle>
-                  <CardDescription>
-                    Your missions and milestones
-                  </CardDescription>
+                  <CardTitle>Profile</CardTitle>
+                  <CardDescription>Your personal information</CardDescription>
                 </div>
               </div>
-              <Button onClick={() => setIsAddingGoal(true)} size="sm">
-                <Plus className="h-4 w-4 mr-1" /> Add Goal
-              </Button>
+              {!isEditingProfile && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setIsEditingProfile(true)}
+                >
+                  <Edit2 className="h-4 w-4" />
+                </Button>
+              )}
             </div>
           </CardHeader>
           <CardContent>
-            {isAddingGoal && (
-              <GoalForm
-                onSubmit={handleGoalSubmit}
-                onCancel={() => setIsAddingGoal(false)}
-                loading={loading}
-                isFirst={goals.length === 0}
-              />
-            )}
+            {isEditingProfile ? (
+              <form onSubmit={handleProfileSubmit} className="space-y-4">
+                <div className="grid gap-2">
+                  <Label htmlFor="full_name">Display Name</Label>
+                  <Input
+                    id="full_name"
+                    name="full_name"
+                    defaultValue={profile?.full_name || ""}
+                    placeholder="Your name"
+                  />
+                </div>
 
-            {goals.length === 0 && !isAddingGoal ? (
-              <div className="text-center py-8">
-                <Target className="h-12 w-12 mx-auto text-muted-foreground/50 mb-3" />
-                <p className="text-muted-foreground mb-4">No goals set yet</p>
-                <Button onClick={() => setIsAddingGoal(true)}>
-                  <Plus className="h-4 w-4 mr-1" /> Create Your First Goal
-                </Button>
-              </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="birthday">Birthday</Label>
+                  <Input
+                    id="birthday"
+                    name="birthday"
+                    type="date"
+                    defaultValue={profile?.birthday || ""}
+                  />
+                  {profile?.birthday && (
+                    <p className="text-xs text-muted-foreground">
+                      Current age: {getAge(profile.birthday)} years old
+                    </p>
+                  )}
+                </div>
+
+                <div className="grid gap-2">
+                  <Label htmlFor="currency">Preferred Currency</Label>
+                  <select
+                    id="currency"
+                    name="currency"
+                    defaultValue={profile?.currency || "CAD"}
+                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                  >
+                    <option value="CAD">🇨🇦 CAD - Canadian Dollar</option>
+                    <option value="USD">🇺🇸 USD - US Dollar</option>
+                  </select>
+                </div>
+
+                <div className="flex gap-2 pt-2">
+                  <Button type="submit" disabled={loading}>
+                    {loading ? "Saving..." : "Save Changes"}
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setIsEditingProfile(false)}
+                  >
+                    Cancel
+                  </Button>
+                </div>
+              </form>
             ) : (
-              <div className="space-y-3 mt-4">
-                {goals.map((goal) => {
-                  const colorConfig =
-                    GOAL_COLORS[goal.color as GoalColor] || GOAL_COLORS.amber;
-                  const isExpanded = expandedGoalId === goal.id;
-                  const milestones = milestonesMap[goal.id] || [];
-
-                  if (editingGoalId === goal.id) {
-                    return (
-                      <GoalForm
-                        key={goal.id}
-                        goal={goal}
-                        onSubmit={handleGoalSubmit}
-                        onCancel={() => setEditingGoalId(null)}
-                        loading={loading}
-                      />
-                    );
-                  }
-
-                  return (
-                    <div
-                      key={goal.id}
-                      className={`rounded-lg border ${colorConfig.border} ${colorConfig.bg} overflow-hidden transition-all`}
-                    >
-                      <div
-                        className="p-4 cursor-pointer"
-                        onClick={() =>
-                          setExpandedGoalId(isExpanded ? null : goal.id)
-                        }
-                      >
-                        <div className="flex items-start justify-between">
-                          <div className="flex items-center gap-2">
-                            {goal.is_primary && (
-                              <Star
-                                className={`h-4 w-4 ${colorConfig.text} fill-current`}
-                              />
-                            )}
-                            <span
-                              className={`font-semibold ${colorConfig.text}`}
-                            >
-                              {goal.name}
-                            </span>
-                            <span className="text-xs bg-white/50 px-2 py-0.5 rounded-full">
-                              {GOAL_TYPES[goal.goal_type as GoalType]?.icon}{" "}
-                              {GOAL_TYPES[goal.goal_type as GoalType]?.label}
-                            </span>
-                          </div>
-                          <div className="flex items-center gap-1">
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              className="h-7 w-7 p-0"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setEditingGoalId(goal.id);
-                              }}
-                            >
-                              <Edit2 className="h-3 w-3" />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              className="h-7 w-7 p-0 text-destructive hover:text-destructive"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleDeleteGoal(goal.id);
-                              }}
-                            >
-                              <Trash2 className="h-3 w-3" />
-                            </Button>
-                          </div>
-                        </div>
-
-                        <div className="mt-2 flex items-baseline gap-2">
-                          <span className="text-2xl font-bold">
-                            {formatCurrency(goal.target_amount)}
-                          </span>
-                          {goal.target_date && (
-                            <span className="text-sm text-muted-foreground">
-                              by{" "}
-                              {new Date(goal.target_date).toLocaleDateString()}
-                            </span>
-                          )}
-                          {goal.target_age && (
-                            <span className="text-sm text-muted-foreground">
-                              by age {goal.target_age}
-                            </span>
-                          )}
-                        </div>
-
-                        {goal.description && (
-                          <p className="text-sm text-muted-foreground mt-1">
-                            {goal.description}
-                          </p>
-                        )}
-                      </div>
-
-                      {/* Milestones Section */}
-                      {isExpanded && (
-                        <div className="border-t border-white/50 p-4 bg-white/30">
-                          <div className="flex items-center justify-between mb-3">
-                            <div className="flex items-center gap-2">
-                              <Milestone className="h-4 w-4 text-muted-foreground" />
-                              <span className="text-sm font-medium">
-                                Milestones
-                              </span>
-                            </div>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => setIsAddingMilestone(goal.id)}
-                            >
-                              <Plus className="h-3 w-3 mr-1" /> Add
-                            </Button>
-                          </div>
-
-                          {isAddingMilestone === goal.id && (
-                            <form
-                              onSubmit={(e) =>
-                                handleMilestoneSubmit(goal.id, e)
-                              }
-                              className="mb-3 p-3 bg-white rounded-lg space-y-3"
-                            >
-                              <div className="grid gap-2">
-                                <Label className="text-xs">
-                                  Milestone Name
-                                </Label>
-                                <Input
-                                  name="name"
-                                  placeholder="e.g., First $50K"
-                                  required
-                                  className="h-8 text-sm"
-                                />
-                              </div>
-                              <div className="grid grid-cols-2 gap-2">
-                                <div className="grid gap-1">
-                                  <Label className="text-xs">
-                                    Target Amount
-                                  </Label>
-                                  <Input
-                                    name="target_amount"
-                                    type="number"
-                                    step="0.01"
-                                    required
-                                    className="h-8 text-sm"
-                                  />
-                                </div>
-                                <div className="grid gap-1">
-                                  <Label className="text-xs">Target Date</Label>
-                                  <Input
-                                    name="target_date"
-                                    type="date"
-                                    className="h-8 text-sm"
-                                  />
-                                </div>
-                              </div>
-                              <div className="flex gap-2">
-                                <Button
-                                  type="submit"
-                                  size="sm"
-                                  disabled={loading}
-                                >
-                                  Add
-                                </Button>
-                                <Button
-                                  type="button"
-                                  size="sm"
-                                  variant="outline"
-                                  onClick={() => setIsAddingMilestone(null)}
-                                >
-                                  Cancel
-                                </Button>
-                              </div>
-                            </form>
-                          )}
-
-                          {milestones.length === 0 &&
-                          isAddingMilestone !== goal.id ? (
-                            <p className="text-sm text-muted-foreground text-center py-3">
-                              No milestones yet. Add checkpoints to track your
-                              progress!
-                            </p>
-                          ) : (
-                            <div className="space-y-2">
-                              {milestones.map((milestone) =>
-                                editingMilestoneId === milestone.id ? (
-                                  <form
-                                    key={milestone.id}
-                                    onSubmit={(e) =>
-                                      handleMilestoneUpdate(milestone.id, e)
-                                    }
-                                    className="p-3 bg-white rounded-lg space-y-3 border border-amber-200"
-                                  >
-                                    <div className="grid gap-2">
-                                      <Label className="text-xs">
-                                        Milestone Name
-                                      </Label>
-                                      <Input
-                                        name="name"
-                                        defaultValue={milestone.name}
-                                        placeholder="e.g., First $50K"
-                                        required
-                                        className="h-8 text-sm"
-                                      />
-                                    </div>
-                                    <div className="grid grid-cols-2 gap-2">
-                                      <div className="grid gap-1">
-                                        <Label className="text-xs">
-                                          Target Amount
-                                        </Label>
-                                        <Input
-                                          name="target_amount"
-                                          type="number"
-                                          step="0.01"
-                                          defaultValue={milestone.target_amount}
-                                          required
-                                          className="h-8 text-sm"
-                                        />
-                                      </div>
-                                      <div className="grid gap-1">
-                                        <Label className="text-xs">
-                                          Target Date
-                                        </Label>
-                                        <Input
-                                          name="target_date"
-                                          type="date"
-                                          defaultValue={
-                                            milestone.target_date || ""
-                                          }
-                                          className="h-8 text-sm"
-                                        />
-                                      </div>
-                                    </div>
-                                    <div className="flex gap-2">
-                                      <Button
-                                        type="submit"
-                                        size="sm"
-                                        disabled={loading}
-                                      >
-                                        {loading ? "Saving..." : "Save"}
-                                      </Button>
-                                      <Button
-                                        type="button"
-                                        size="sm"
-                                        variant="outline"
-                                        onClick={() =>
-                                          setEditingMilestoneId(null)
-                                        }
-                                      >
-                                        Cancel
-                                      </Button>
-                                    </div>
-                                  </form>
-                                ) : (
-                                  <div
-                                    key={milestone.id}
-                                    className={`flex items-center justify-between p-2 rounded-md ${
-                                      milestone.is_achieved
-                                        ? "bg-emerald-50"
-                                        : "bg-white"
-                                    }`}
-                                  >
-                                    <div className="flex items-center gap-2">
-                                      <button
-                                        onClick={() =>
-                                          markMilestoneAchieved(
-                                            milestone.id,
-                                            !milestone.is_achieved
-                                          )
-                                        }
-                                        className={`h-5 w-5 rounded-full border-2 flex items-center justify-center transition-colors ${
-                                          milestone.is_achieved
-                                            ? "bg-emerald-500 border-emerald-500 text-white"
-                                            : "border-slate-300 hover:border-emerald-400"
-                                        }`}
-                                      >
-                                        {milestone.is_achieved && (
-                                          <Check className="h-3 w-3" />
-                                        )}
-                                      </button>
-                                      <div>
-                                        <span
-                                          className={`text-sm font-medium ${
-                                            milestone.is_achieved
-                                              ? "line-through text-muted-foreground"
-                                              : ""
-                                          }`}
-                                        >
-                                          {milestone.name}
-                                        </span>
-                                        <span className="text-xs text-muted-foreground ml-2">
-                                          {formatCurrency(
-                                            milestone.target_amount
-                                          )}
-                                        </span>
-                                      </div>
-                                    </div>
-                                    <div className="flex items-center gap-1">
-                                      {milestone.target_date && (
-                                        <span className="text-xs text-muted-foreground mr-1">
-                                          {new Date(
-                                            milestone.target_date
-                                          ).toLocaleDateString()}
-                                        </span>
-                                      )}
-                                      <Button
-                                        variant="ghost"
-                                        size="sm"
-                                        className="h-6 w-6 p-0"
-                                        onClick={() =>
-                                          setEditingMilestoneId(milestone.id)
-                                        }
-                                      >
-                                        <Edit2 className="h-3 w-3" />
-                                      </Button>
-                                      <Button
-                                        variant="ghost"
-                                        size="sm"
-                                        className="h-6 w-6 p-0 text-destructive hover:text-destructive"
-                                        onClick={() =>
-                                          deleteMilestone(milestone.id)
-                                        }
-                                      >
-                                        <X className="h-3 w-3" />
-                                      </Button>
-                                    </div>
-                                  </div>
-                                )
-                              )}
-                            </div>
-                          )}
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
+              <div className="space-y-4">
+                <div className="flex items-center justify-between py-2">
+                  <span className="text-sm text-muted-foreground">Email</span>
+                  <span className="text-sm font-medium">{userEmail}</span>
+                </div>
+                <Separator />
+                <div className="flex items-center justify-between py-2">
+                  <span className="text-sm text-muted-foreground">Name</span>
+                  <span className="text-sm font-medium">
+                    {profile?.full_name || "Not set"}
+                  </span>
+                </div>
+                <Separator />
+                <div className="flex items-center justify-between py-2">
+                  <span className="text-sm text-muted-foreground">
+                    Birthday
+                  </span>
+                  <span className="text-sm font-medium">
+                    {profile?.birthday
+                      ? `${new Date(
+                          profile.birthday
+                        ).toLocaleDateString()} (Age ${getAge(
+                          profile.birthday
+                        )})`
+                      : "Not set"}
+                  </span>
+                </div>
+                <Separator />
+                <div className="flex items-center justify-between py-2">
+                  <span className="text-sm text-muted-foreground">
+                    Currency
+                  </span>
+                  <span className="text-sm font-medium">
+                    {profile?.currency === "USD" ? "🇺🇸 USD" : "🇨🇦 CAD"}
+                  </span>
+                </div>
               </div>
             )}
           </CardContent>
         </Card>
+
+        {/* Goals Section */}
+        <div className="space-y-4">
+          <Card>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-amber-500/20 to-orange-600/20">
+                    <Target className="h-5 w-5 text-amber-600" />
+                  </div>
+                  <div>
+                    <CardTitle>Financial Goals</CardTitle>
+                    <CardDescription>
+                      Your missions and milestones
+                    </CardDescription>
+                  </div>
+                </div>
+                <Button onClick={() => setIsAddingGoal(true)} size="sm">
+                  <Plus className="h-4 w-4 mr-1" /> Add Goal
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent>
+              {isAddingGoal && (
+                <GoalForm
+                  onSubmit={handleGoalSubmit}
+                  onCancel={() => setIsAddingGoal(false)}
+                  loading={loading}
+                  isFirst={goals.length === 0}
+                />
+              )}
+
+              {goals.length === 0 && !isAddingGoal ? (
+                <div className="text-center py-8">
+                  <Target className="h-12 w-12 mx-auto text-muted-foreground/50 mb-3" />
+                  <p className="text-muted-foreground mb-4">No goals set yet</p>
+                  <Button onClick={() => setIsAddingGoal(true)}>
+                    <Plus className="h-4 w-4 mr-1" /> Create Your First Goal
+                  </Button>
+                </div>
+              ) : (
+                <div className="space-y-3 mt-4">
+                  {goals.map((goal) => {
+                    const colorConfig =
+                      GOAL_COLORS[goal.color as GoalColor] || GOAL_COLORS.amber;
+                    const isExpanded = expandedGoalId === goal.id;
+                    const milestones = milestonesMap[goal.id] || [];
+
+                    if (editingGoalId === goal.id) {
+                      return (
+                        <GoalForm
+                          key={goal.id}
+                          goal={goal}
+                          onSubmit={handleGoalSubmit}
+                          onCancel={() => setEditingGoalId(null)}
+                          loading={loading}
+                        />
+                      );
+                    }
+
+                    return (
+                      <div
+                        key={goal.id}
+                        className={`rounded-lg border ${colorConfig.border} ${colorConfig.bg} overflow-hidden transition-all`}
+                      >
+                        <div
+                          className="p-4 cursor-pointer"
+                          onClick={() =>
+                            setExpandedGoalId(isExpanded ? null : goal.id)
+                          }
+                        >
+                          <div className="flex items-start justify-between">
+                            <div className="flex items-center gap-2">
+                              {goal.is_primary && (
+                                <Star
+                                  className={`h-4 w-4 ${colorConfig.text} fill-current`}
+                                />
+                              )}
+                              <span
+                                className={`font-semibold ${colorConfig.text}`}
+                              >
+                                {goal.name}
+                              </span>
+                              <span className="text-xs bg-white/50 px-2 py-0.5 rounded-full">
+                                {GOAL_TYPES[goal.goal_type as GoalType]?.icon}{" "}
+                                {GOAL_TYPES[goal.goal_type as GoalType]?.label}
+                              </span>
+                            </div>
+                            <div className="flex items-center gap-1">
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-7 w-7 p-0"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setEditingGoalId(goal.id);
+                                }}
+                              >
+                                <Edit2 className="h-3 w-3" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-7 w-7 p-0 text-destructive hover:text-destructive"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleDeleteGoal(goal.id);
+                                }}
+                              >
+                                <Trash2 className="h-3 w-3" />
+                              </Button>
+                            </div>
+                          </div>
+
+                          <div className="mt-2 flex items-baseline gap-2">
+                            <span className="text-2xl font-bold">
+                              {formatCurrency(goal.target_amount)}
+                            </span>
+                            {goal.target_date && (
+                              <span className="text-sm text-muted-foreground">
+                                by{" "}
+                                {new Date(
+                                  goal.target_date
+                                ).toLocaleDateString()}
+                              </span>
+                            )}
+                            {goal.target_age && (
+                              <span className="text-sm text-muted-foreground">
+                                by age {goal.target_age}
+                              </span>
+                            )}
+                          </div>
+
+                          {goal.description && (
+                            <p className="text-sm text-muted-foreground mt-1">
+                              {goal.description}
+                            </p>
+                          )}
+                        </div>
+
+                        {/* Milestones Section */}
+                        {isExpanded && (
+                          <div className="border-t border-white/50 p-4 bg-white/30">
+                            <div className="flex items-center justify-between mb-3">
+                              <div className="flex items-center gap-2">
+                                <Milestone className="h-4 w-4 text-muted-foreground" />
+                                <span className="text-sm font-medium">
+                                  Milestones
+                                </span>
+                              </div>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => setIsAddingMilestone(goal.id)}
+                              >
+                                <Plus className="h-3 w-3 mr-1" /> Add
+                              </Button>
+                            </div>
+
+                            {isAddingMilestone === goal.id && (
+                              <form
+                                onSubmit={(e) =>
+                                  handleMilestoneSubmit(goal.id, e)
+                                }
+                                className="mb-3 p-3 bg-white rounded-lg space-y-3"
+                              >
+                                <div className="grid gap-2">
+                                  <Label className="text-xs">
+                                    Milestone Name
+                                  </Label>
+                                  <Input
+                                    name="name"
+                                    placeholder="e.g., First $50K"
+                                    required
+                                    className="h-8 text-sm"
+                                  />
+                                </div>
+                                <div className="grid grid-cols-2 gap-2">
+                                  <div className="grid gap-1">
+                                    <Label className="text-xs">
+                                      Target Amount
+                                    </Label>
+                                    <Input
+                                      name="target_amount"
+                                      type="number"
+                                      step="0.01"
+                                      required
+                                      className="h-8 text-sm"
+                                    />
+                                  </div>
+                                  <div className="grid gap-1">
+                                    <Label className="text-xs">
+                                      Target Date
+                                    </Label>
+                                    <Input
+                                      name="target_date"
+                                      type="date"
+                                      className="h-8 text-sm"
+                                    />
+                                  </div>
+                                </div>
+                                <div className="flex gap-2">
+                                  <Button
+                                    type="submit"
+                                    size="sm"
+                                    disabled={loading}
+                                  >
+                                    Add
+                                  </Button>
+                                  <Button
+                                    type="button"
+                                    size="sm"
+                                    variant="outline"
+                                    onClick={() => setIsAddingMilestone(null)}
+                                  >
+                                    Cancel
+                                  </Button>
+                                </div>
+                              </form>
+                            )}
+
+                            {milestones.length === 0 &&
+                            isAddingMilestone !== goal.id ? (
+                              <p className="text-sm text-muted-foreground text-center py-3">
+                                No milestones yet. Add checkpoints to track your
+                                progress!
+                              </p>
+                            ) : (
+                              <div className="space-y-2">
+                                {milestones.map((milestone) =>
+                                  editingMilestoneId === milestone.id ? (
+                                    <form
+                                      key={milestone.id}
+                                      onSubmit={(e) =>
+                                        handleMilestoneUpdate(milestone.id, e)
+                                      }
+                                      className="p-3 bg-white rounded-lg space-y-3 border border-amber-200"
+                                    >
+                                      <div className="grid gap-2">
+                                        <Label className="text-xs">
+                                          Milestone Name
+                                        </Label>
+                                        <Input
+                                          name="name"
+                                          defaultValue={milestone.name}
+                                          placeholder="e.g., First $50K"
+                                          required
+                                          className="h-8 text-sm"
+                                        />
+                                      </div>
+                                      <div className="grid grid-cols-2 gap-2">
+                                        <div className="grid gap-1">
+                                          <Label className="text-xs">
+                                            Target Amount
+                                          </Label>
+                                          <Input
+                                            name="target_amount"
+                                            type="number"
+                                            step="0.01"
+                                            defaultValue={
+                                              milestone.target_amount
+                                            }
+                                            required
+                                            className="h-8 text-sm"
+                                          />
+                                        </div>
+                                        <div className="grid gap-1">
+                                          <Label className="text-xs">
+                                            Target Date
+                                          </Label>
+                                          <Input
+                                            name="target_date"
+                                            type="date"
+                                            defaultValue={
+                                              milestone.target_date || ""
+                                            }
+                                            className="h-8 text-sm"
+                                          />
+                                        </div>
+                                      </div>
+                                      <div className="flex gap-2">
+                                        <Button
+                                          type="submit"
+                                          size="sm"
+                                          disabled={loading}
+                                        >
+                                          {loading ? "Saving..." : "Save"}
+                                        </Button>
+                                        <Button
+                                          type="button"
+                                          size="sm"
+                                          variant="outline"
+                                          onClick={() =>
+                                            setEditingMilestoneId(null)
+                                          }
+                                        >
+                                          Cancel
+                                        </Button>
+                                      </div>
+                                    </form>
+                                  ) : (
+                                    <div
+                                      key={milestone.id}
+                                      className={`flex items-center justify-between p-2 rounded-md ${
+                                        milestone.is_achieved
+                                          ? "bg-emerald-50"
+                                          : "bg-white"
+                                      }`}
+                                    >
+                                      <div className="flex items-center gap-2">
+                                        <button
+                                          onClick={() =>
+                                            markMilestoneAchieved(
+                                              milestone.id,
+                                              !milestone.is_achieved
+                                            )
+                                          }
+                                          className={`h-5 w-5 rounded-full border-2 flex items-center justify-center transition-colors ${
+                                            milestone.is_achieved
+                                              ? "bg-emerald-500 border-emerald-500 text-white"
+                                              : "border-slate-300 hover:border-emerald-400"
+                                          }`}
+                                        >
+                                          {milestone.is_achieved && (
+                                            <Check className="h-3 w-3" />
+                                          )}
+                                        </button>
+                                        <div>
+                                          <span
+                                            className={`text-sm font-medium ${
+                                              milestone.is_achieved
+                                                ? "line-through text-muted-foreground"
+                                                : ""
+                                            }`}
+                                          >
+                                            {milestone.name}
+                                          </span>
+                                          <span className="text-xs text-muted-foreground ml-2">
+                                            {formatCurrency(
+                                              milestone.target_amount
+                                            )}
+                                          </span>
+                                        </div>
+                                      </div>
+                                      <div className="flex items-center gap-1">
+                                        {milestone.target_date && (
+                                          <span className="text-xs text-muted-foreground mr-1">
+                                            {new Date(
+                                              milestone.target_date
+                                            ).toLocaleDateString()}
+                                          </span>
+                                        )}
+                                        <Button
+                                          variant="ghost"
+                                          size="sm"
+                                          className="h-6 w-6 p-0"
+                                          onClick={() =>
+                                            setEditingMilestoneId(milestone.id)
+                                          }
+                                        >
+                                          <Edit2 className="h-3 w-3" />
+                                        </Button>
+                                        <Button
+                                          variant="ghost"
+                                          size="sm"
+                                          className="h-6 w-6 p-0 text-destructive hover:text-destructive"
+                                          onClick={() =>
+                                            deleteMilestone(milestone.id)
+                                          }
+                                        >
+                                          <X className="h-3 w-3" />
+                                        </Button>
+                                      </div>
+                                    </div>
+                                  )
+                                )}
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
       </div>
     </div>
   );
