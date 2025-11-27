@@ -16,17 +16,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Scan, Plus, TrendingUp, TrendingDown, Home, Car, Wallet, CreditCard, Package } from "lucide-react";
-import type { Asset, AssetCategory, ASSET_CATEGORIES } from "@/lib/types";
-
-type Investment = {
-  id: string;
-  symbol: string;
-  quantity: number;
-  avg_cost: number;
-  asset_type: string;
-  account_label?: string;
-  date?: string;
-};
+import type { Asset, AssetCategory, Investment } from "@/lib/types";
 
 type TabType = "securities" | "real_estate" | "vehicles" | "other" | "liabilities";
 

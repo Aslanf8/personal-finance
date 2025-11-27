@@ -15,16 +15,7 @@ import { Label } from "@/components/ui/label";
 import { updateInvestment } from "@/app/(dashboard)/investments/actions";
 import { useState } from "react";
 import { Pencil } from "lucide-react";
-
-type Investment = {
-  id: string;
-  symbol: string;
-  quantity: number;
-  avg_cost: number;
-  asset_type: string;
-  account_label?: string;
-  date?: string;
-};
+import type { Investment } from "@/lib/types";
 
 const ACCOUNT_LABELS = ['Margin', 'TFSA', 'RRSP', 'FHSA', 'Cash', 'Crypto'] as const;
 

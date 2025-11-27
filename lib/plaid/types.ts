@@ -36,6 +36,7 @@ export interface PlaidAccount {
 export interface ConnectedAccount extends PlaidAccount {
   institution_name: string | null;
   item_status: string;
+  last_synced_at: string | null;
 }
 
 // API Response types
