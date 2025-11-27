@@ -243,7 +243,10 @@ function SidebarContent({
       </nav>
 
       {/* Footer with Sign Out */}
-      <div className="mt-auto border-t border-border/50 p-3">
+      <div className={cn(
+        "mt-auto border-t border-border/50 p-3",
+        mobile && "bg-background/95 backdrop-blur-sm p-4"
+      )}>
         <TooltipProvider>
           {effectiveCollapsed ? (
             <Tooltip delayDuration={0}>
@@ -261,16 +264,21 @@ function SidebarContent({
                 Sign Out
               </TooltipContent>
             </Tooltip>
+          ) : mobile ? (
+            <Button
+              onClick={onSignOut}
+              className="w-full h-12 gap-3 bg-red-600 text-white font-semibold shadow-md hover:bg-red-700 active:bg-red-800"
+            >
+              <LogOut className="h-5 w-5" />
+              Sign Out
+            </Button>
           ) : (
             <Button
               variant="ghost"
               onClick={onSignOut}
-              className={cn(
-                "w-full justify-start gap-3 text-muted-foreground hover:bg-destructive/10 hover:text-destructive",
-                mobile && "h-12 text-base"
-              )}
+              className="w-full justify-start gap-3 text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
             >
-              <LogOut className={cn("h-5 w-5", mobile && "h-5 w-5")} />
+              <LogOut className="h-5 w-5" />
               Sign Out
             </Button>
           )}
