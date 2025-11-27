@@ -12,7 +12,6 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
-import { Separator } from "@/components/ui/separator";
 import {
   LayoutDashboard,
   ArrowLeftRight,
@@ -22,6 +21,7 @@ import {
   Wallet,
   LogOut,
   Settings,
+  X,
 } from "lucide-react";
 
 interface NavItem {
@@ -144,16 +144,21 @@ function NavLink({
 
 interface SidebarProps {
   onSignOut: () => void;
+  userEmail?: string;
 }
 
 function SidebarContent({
   mobile = false,
   onSignOut,
   onNavClick,
+  onClose,
+  userEmail,
 }: {
   mobile?: boolean;
   onSignOut: () => void;
   onNavClick?: () => void;
+  onClose?: () => void;
+  userEmail?: string;
 }) {
   const { isCollapsed } = useSidebarContext();
   const pathname = usePathname();
@@ -161,27 +166,58 @@ function SidebarContent({
 
   return (
     <div className="flex h-full flex-col">
-      {/* Logo Section */}
+      {/* Header Section */}
       <div
         className={cn(
           "flex h-16 items-center border-b border-border/50 px-4",
-          effectiveCollapsed ? "justify-center px-2" : "gap-3"
+          effectiveCollapsed ? "justify-center px-2" : "justify-between"
         )}
       >
-        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 shadow-lg shadow-emerald-500/20">
-          <Wallet className="h-5 w-5 text-white" />
-        </div>
-        {!effectiveCollapsed && (
-          <div className="flex flex-col overflow-hidden">
-            <span className="truncate text-base font-bold tracking-tight">
-              FinanceHub
-            </span>
-            <span className="truncate text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
-              Personal Finance
-            </span>
+        <div className={cn("flex items-center", !effectiveCollapsed && "gap-3")}>
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 shadow-lg shadow-emerald-500/20">
+            <Wallet className="h-5 w-5 text-white" />
           </div>
+          {!effectiveCollapsed && (
+            <div className="flex flex-col overflow-hidden">
+              <span className="truncate text-base font-bold tracking-tight">
+                FinanceHub
+              </span>
+              <span className="truncate text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
+                Personal Finance
+              </span>
+            </div>
+          )}
+        </div>
+        {/* Close button for mobile */}
+        {mobile && onClose && (
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={onClose}
+            className="h-8 w-8 text-muted-foreground hover:text-foreground"
+          >
+            <X className="h-5 w-5" />
+            <span className="sr-only">Close menu</span>
+          </Button>
         )}
       </div>
+
+      {/* User Section - Mobile Only */}
+      {mobile && userEmail && (
+        <div className="border-b border-border/50 p-4">
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-emerald-500/20 to-teal-600/20 text-sm font-semibold text-emerald-600">
+              {userEmail.charAt(0).toUpperCase()}
+            </div>
+            <div className="flex flex-1 flex-col overflow-hidden">
+              <span className="truncate text-sm font-medium">Account</span>
+              <span className="truncate text-xs text-muted-foreground">
+                {userEmail}
+              </span>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Navigation */}
       <nav className="flex-1 space-y-1 overflow-y-auto p-3">
@@ -206,9 +242,8 @@ function SidebarContent({
         </TooltipProvider>
       </nav>
 
-      {/* Footer */}
+      {/* Footer with Sign Out */}
       <div className="mt-auto border-t border-border/50 p-3">
-        <Separator className="mb-3 opacity-50" />
         <TooltipProvider>
           {effectiveCollapsed ? (
             <Tooltip delayDuration={0}>
@@ -230,9 +265,12 @@ function SidebarContent({
             <Button
               variant="ghost"
               onClick={onSignOut}
-              className="w-full justify-start gap-3 text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
+              className={cn(
+                "w-full justify-start gap-3 text-muted-foreground hover:bg-destructive/10 hover:text-destructive",
+                mobile && "h-12 text-base"
+              )}
             >
-              <LogOut className="h-5 w-5" />
+              <LogOut className={cn("h-5 w-5", mobile && "h-5 w-5")} />
               Sign Out
             </Button>
           )}
@@ -242,7 +280,7 @@ function SidebarContent({
   );
 }
 
-export function Sidebar({ onSignOut }: SidebarProps) {
+export function Sidebar({ onSignOut, userEmail }: SidebarProps) {
   const { isCollapsed, setIsCollapsed, isMobileOpen, setIsMobileOpen } =
     useSidebarContext();
 
@@ -252,19 +290,26 @@ export function Sidebar({ onSignOut }: SidebarProps) {
     localStorage.setItem("sidebar-collapsed", String(newState));
   };
 
+  const closeMobile = () => setIsMobileOpen(false);
+
   return (
     <>
       {/* Mobile Sidebar */}
       <Sheet open={isMobileOpen} onOpenChange={setIsMobileOpen}>
         <SheetContent
           side="left"
-          className="w-72 p-0 bg-gradient-to-b from-background via-background to-muted/30"
+          className="w-[280px] p-0 bg-gradient-to-b from-background via-background to-muted/30 [&>button]:hidden"
         >
           <SheetTitle className="sr-only">Navigation Menu</SheetTitle>
           <SidebarContent
             mobile
-            onSignOut={onSignOut}
-            onNavClick={() => setIsMobileOpen(false)}
+            onSignOut={() => {
+              closeMobile();
+              onSignOut();
+            }}
+            onNavClick={closeMobile}
+            onClose={closeMobile}
+            userEmail={userEmail}
           />
         </SheetContent>
       </Sheet>
@@ -276,7 +321,7 @@ export function Sidebar({ onSignOut }: SidebarProps) {
           isCollapsed ? "w-[72px]" : "w-64"
         )}
       >
-        <SidebarContent onSignOut={onSignOut} />
+        <SidebarContent onSignOut={onSignOut} userEmail={userEmail} />
 
         {/* Collapse Toggle Button */}
         <Button

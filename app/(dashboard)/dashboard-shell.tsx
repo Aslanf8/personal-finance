@@ -35,7 +35,7 @@ export function DashboardShell({
   return (
     <SidebarProvider>
       <div className="flex min-h-screen bg-gradient-to-br from-background via-background to-muted/20">
-        <Sidebar onSignOut={handleSignOut} />
+        <Sidebar onSignOut={handleSignOut} userEmail={user.email} />
 
         <div className="flex flex-1 flex-col overflow-hidden">
           {/* Header */}
