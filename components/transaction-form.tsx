@@ -30,20 +30,31 @@ export const INCOME_CATEGORIES = [
   "Other",
 ];
 
-export function TransactionForm() {
+interface TransactionFormProps {
+  autoOpenScan?: boolean;
+}
+
+export function TransactionForm({ autoOpenScan = false }: TransactionFormProps) {
   const formRef = useRef<HTMLFormElement>(null);
   const [type, setType] = useState<"expense" | "income">("expense");
   const [currency, setCurrency] = useState<"CAD" | "USD">("CAD");
   const [isRecurring, setIsRecurring] = useState(false);
+  const [scanOpen, setScanOpen] = useState(autoOpenScan);
+
+  // Helper to get local date string (not UTC)
+  const getLocalDateString = () => {
+    const now = new Date();
+    return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+  };
 
   // Controlled form fields for scan integration
-  const [date, setDate] = useState(new Date().toISOString().split("T")[0]);
+  const [date, setDate] = useState(getLocalDateString());
   const [description, setDescription] = useState("");
   const [category, setCategory] = useState("");
   const [amount, setAmount] = useState("");
 
   const resetForm = () => {
-    setDate(new Date().toISOString().split("T")[0]);
+    setDate(getLocalDateString());
     setDescription("");
     setCategory("");
     setAmount("");
@@ -71,7 +82,11 @@ export function TransactionForm() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-4 border-b border-border/50">
         <div className="flex items-center gap-3">
           <h3 className="font-semibold">Add Transaction</h3>
-          <ScanTransactionDialog onScanComplete={handleScanComplete}>
+          <ScanTransactionDialog 
+            onScanComplete={handleScanComplete}
+            defaultOpen={scanOpen}
+            onOpenChange={setScanOpen}
+          >
             <Button variant="outline" size="sm" className="gap-1.5 h-7 text-xs">
               <Scan className="h-3 w-3" />
               Scan

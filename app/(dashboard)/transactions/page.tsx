@@ -3,7 +3,14 @@ import { TransactionForm } from "@/components/transaction-form";
 import { TransactionHistory } from "@/components/transaction-history";
 import { deleteTransaction } from "./actions";
 
-export default async function TransactionsPage() {
+interface TransactionsPageProps {
+  searchParams: Promise<{ scan?: string }>;
+}
+
+export default async function TransactionsPage({ searchParams }: TransactionsPageProps) {
+  const params = await searchParams;
+  const autoOpenScan = params.scan === "true";
+  
   const supabase = await createClient();
   const { data: transactions } = await supabase
     .from("transactions")
@@ -16,7 +23,7 @@ export default async function TransactionsPage() {
         <h1 className="text-2xl font-bold">Transactions</h1>
       </div>
       
-      <TransactionForm />
+      <TransactionForm autoOpenScan={autoOpenScan} />
 
       <TransactionHistory 
         transactions={transactions || []} 

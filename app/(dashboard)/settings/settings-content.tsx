@@ -1,15 +1,47 @@
 "use client";
 
 import { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
-import { updateProfile, createGoal, updateGoal, deleteGoal, createMilestone, updateMilestone, deleteMilestone, markMilestoneAchieved } from "./actions";
-import type { UserProfile, FinancialGoal, GoalMilestone, GoalColor, GoalType } from "@/lib/types";
+import {
+  updateProfile,
+  createGoal,
+  updateGoal,
+  deleteGoal,
+  createMilestone,
+  updateMilestone,
+  deleteMilestone,
+  markMilestoneAchieved,
+} from "./actions";
+import type {
+  UserProfile,
+  FinancialGoal,
+  GoalMilestone,
+  GoalColor,
+  GoalType,
+} from "@/lib/types";
 import { GOAL_COLORS, GOAL_TYPES } from "@/lib/types";
-import { User, Target, Calendar, Plus, Trash2, Edit2, Star, Check, X, Milestone } from "lucide-react";
+import {
+  User,
+  Target,
+  Calendar,
+  Plus,
+  Trash2,
+  Edit2,
+  Star,
+  Check,
+  X,
+  Milestone,
+} from "lucide-react";
 
 interface SettingsContentProps {
   profile: UserProfile | null;
@@ -18,26 +50,37 @@ interface SettingsContentProps {
   userEmail: string;
 }
 
-export function SettingsContent({ profile, goals, milestonesMap, userEmail }: SettingsContentProps) {
+export function SettingsContent({
+  profile,
+  goals,
+  milestonesMap,
+  userEmail,
+}: SettingsContentProps) {
   const [isEditingProfile, setIsEditingProfile] = useState(false);
   const [isAddingGoal, setIsAddingGoal] = useState(false);
   const [editingGoalId, setEditingGoalId] = useState<string | null>(null);
-  const [expandedGoalId, setExpandedGoalId] = useState<string | null>(goals.find(g => g.is_primary)?.id || null);
-  const [isAddingMilestone, setIsAddingMilestone] = useState<string | null>(null);
-  const [editingMilestoneId, setEditingMilestoneId] = useState<string | null>(null);
+  const [expandedGoalId, setExpandedGoalId] = useState<string | null>(
+    goals.find((g) => g.is_primary)?.id || null
+  );
+  const [isAddingMilestone, setIsAddingMilestone] = useState<string | null>(
+    null
+  );
+  const [editingMilestoneId, setEditingMilestoneId] = useState<string | null>(
+    null
+  );
   const [loading, setLoading] = useState(false);
 
   const handleProfileSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoading(true);
     const formData = new FormData(e.currentTarget);
-    
+
     await updateProfile({
       full_name: formData.get("full_name") as string,
       birthday: formData.get("birthday") as string,
       currency: formData.get("currency") as "CAD" | "USD",
     });
-    
+
     setIsEditingProfile(false);
     setLoading(false);
   };
@@ -46,13 +89,15 @@ export function SettingsContent({ profile, goals, milestonesMap, userEmail }: Se
     e.preventDefault();
     setLoading(true);
     const formData = new FormData(e.currentTarget);
-    
+
     const goalData = {
       name: formData.get("name") as string,
-      description: formData.get("description") as string || undefined,
+      description: (formData.get("description") as string) || undefined,
       target_amount: parseFloat(formData.get("target_amount") as string),
-      target_date: formData.get("target_date") as string || undefined,
-      target_age: formData.get("target_age") ? parseInt(formData.get("target_age") as string) : undefined,
+      target_date: (formData.get("target_date") as string) || undefined,
+      target_age: formData.get("target_age")
+        ? parseInt(formData.get("target_age") as string)
+        : undefined,
       goal_type: formData.get("goal_type") as GoalType,
       color: formData.get("color") as GoalColor,
       is_primary: formData.get("is_primary") === "on",
@@ -65,7 +110,7 @@ export function SettingsContent({ profile, goals, milestonesMap, userEmail }: Se
       await createGoal(goalData);
       setIsAddingGoal(false);
     }
-    
+
     setLoading(false);
   };
 
@@ -74,33 +119,39 @@ export function SettingsContent({ profile, goals, milestonesMap, userEmail }: Se
     await deleteGoal(id);
   };
 
-  const handleMilestoneSubmit = async (goalId: string, e: React.FormEvent<HTMLFormElement>) => {
+  const handleMilestoneSubmit = async (
+    goalId: string,
+    e: React.FormEvent<HTMLFormElement>
+  ) => {
     e.preventDefault();
     setLoading(true);
     const formData = new FormData(e.currentTarget);
-    
+
     await createMilestone({
       goal_id: goalId,
       name: formData.get("name") as string,
       target_amount: parseFloat(formData.get("target_amount") as string),
-      target_date: formData.get("target_date") as string || undefined,
+      target_date: (formData.get("target_date") as string) || undefined,
     });
-    
+
     setIsAddingMilestone(null);
     setLoading(false);
   };
 
-  const handleMilestoneUpdate = async (milestoneId: string, e: React.FormEvent<HTMLFormElement>) => {
+  const handleMilestoneUpdate = async (
+    milestoneId: string,
+    e: React.FormEvent<HTMLFormElement>
+  ) => {
     e.preventDefault();
     setLoading(true);
     const formData = new FormData(e.currentTarget);
-    
+
     await updateMilestone(milestoneId, {
       name: formData.get("name") as string,
       target_amount: parseFloat(formData.get("target_amount") as string),
-      target_date: formData.get("target_date") as string || undefined,
+      target_date: (formData.get("target_date") as string) || undefined,
     });
-    
+
     setEditingMilestoneId(null);
     setLoading(false);
   };
@@ -138,7 +189,11 @@ export function SettingsContent({ profile, goals, milestonesMap, userEmail }: Se
               </div>
             </div>
             {!isEditingProfile && (
-              <Button variant="ghost" size="sm" onClick={() => setIsEditingProfile(true)}>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setIsEditingProfile(true)}
+              >
                 <Edit2 className="h-4 w-4" />
               </Button>
             )}
@@ -156,7 +211,7 @@ export function SettingsContent({ profile, goals, milestonesMap, userEmail }: Se
                   placeholder="Your name"
                 />
               </div>
-              
+
               <div className="grid gap-2">
                 <Label htmlFor="birthday">Birthday</Label>
                 <Input
@@ -189,7 +244,11 @@ export function SettingsContent({ profile, goals, milestonesMap, userEmail }: Se
                 <Button type="submit" disabled={loading}>
                   {loading ? "Saving..." : "Save Changes"}
                 </Button>
-                <Button type="button" variant="outline" onClick={() => setIsEditingProfile(false)}>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setIsEditingProfile(false)}
+                >
                   Cancel
                 </Button>
               </div>
@@ -203,14 +262,18 @@ export function SettingsContent({ profile, goals, milestonesMap, userEmail }: Se
               <Separator />
               <div className="flex items-center justify-between py-2">
                 <span className="text-sm text-muted-foreground">Name</span>
-                <span className="text-sm font-medium">{profile?.full_name || "Not set"}</span>
+                <span className="text-sm font-medium">
+                  {profile?.full_name || "Not set"}
+                </span>
               </div>
               <Separator />
               <div className="flex items-center justify-between py-2">
                 <span className="text-sm text-muted-foreground">Birthday</span>
                 <span className="text-sm font-medium">
-                  {profile?.birthday 
-                    ? `${new Date(profile.birthday).toLocaleDateString()} (Age ${getAge(profile.birthday)})`
+                  {profile?.birthday
+                    ? `${new Date(
+                        profile.birthday
+                      ).toLocaleDateString()} (Age ${getAge(profile.birthday)})`
                     : "Not set"}
                 </span>
               </div>
@@ -237,7 +300,9 @@ export function SettingsContent({ profile, goals, milestonesMap, userEmail }: Se
                 </div>
                 <div>
                   <CardTitle>Financial Goals</CardTitle>
-                  <CardDescription>Your missions and milestones</CardDescription>
+                  <CardDescription>
+                    Your missions and milestones
+                  </CardDescription>
                 </div>
               </div>
               <Button onClick={() => setIsAddingGoal(true)} size="sm">
@@ -266,7 +331,8 @@ export function SettingsContent({ profile, goals, milestonesMap, userEmail }: Se
             ) : (
               <div className="space-y-3 mt-4">
                 {goals.map((goal) => {
-                  const colorConfig = GOAL_COLORS[goal.color as GoalColor] || GOAL_COLORS.amber;
+                  const colorConfig =
+                    GOAL_COLORS[goal.color as GoalColor] || GOAL_COLORS.amber;
                   const isExpanded = expandedGoalId === goal.id;
                   const milestones = milestonesMap[goal.id] || [];
 
@@ -289,18 +355,25 @@ export function SettingsContent({ profile, goals, milestonesMap, userEmail }: Se
                     >
                       <div
                         className="p-4 cursor-pointer"
-                        onClick={() => setExpandedGoalId(isExpanded ? null : goal.id)}
+                        onClick={() =>
+                          setExpandedGoalId(isExpanded ? null : goal.id)
+                        }
                       >
                         <div className="flex items-start justify-between">
                           <div className="flex items-center gap-2">
                             {goal.is_primary && (
-                              <Star className={`h-4 w-4 ${colorConfig.text} fill-current`} />
+                              <Star
+                                className={`h-4 w-4 ${colorConfig.text} fill-current`}
+                              />
                             )}
-                            <span className={`font-semibold ${colorConfig.text}`}>
+                            <span
+                              className={`font-semibold ${colorConfig.text}`}
+                            >
                               {goal.name}
                             </span>
                             <span className="text-xs bg-white/50 px-2 py-0.5 rounded-full">
-                              {GOAL_TYPES[goal.goal_type as GoalType]?.icon} {GOAL_TYPES[goal.goal_type as GoalType]?.label}
+                              {GOAL_TYPES[goal.goal_type as GoalType]?.icon}{" "}
+                              {GOAL_TYPES[goal.goal_type as GoalType]?.label}
                             </span>
                           </div>
                           <div className="flex items-center gap-1">
@@ -330,10 +403,13 @@ export function SettingsContent({ profile, goals, milestonesMap, userEmail }: Se
                         </div>
 
                         <div className="mt-2 flex items-baseline gap-2">
-                          <span className="text-2xl font-bold">{formatCurrency(goal.target_amount)}</span>
+                          <span className="text-2xl font-bold">
+                            {formatCurrency(goal.target_amount)}
+                          </span>
                           {goal.target_date && (
                             <span className="text-sm text-muted-foreground">
-                              by {new Date(goal.target_date).toLocaleDateString()}
+                              by{" "}
+                              {new Date(goal.target_date).toLocaleDateString()}
                             </span>
                           )}
                           {goal.target_age && (
@@ -344,7 +420,9 @@ export function SettingsContent({ profile, goals, milestonesMap, userEmail }: Se
                         </div>
 
                         {goal.description && (
-                          <p className="text-sm text-muted-foreground mt-1">{goal.description}</p>
+                          <p className="text-sm text-muted-foreground mt-1">
+                            {goal.description}
+                          </p>
                         )}
                       </div>
 
@@ -354,7 +432,9 @@ export function SettingsContent({ profile, goals, milestonesMap, userEmail }: Se
                           <div className="flex items-center justify-between mb-3">
                             <div className="flex items-center gap-2">
                               <Milestone className="h-4 w-4 text-muted-foreground" />
-                              <span className="text-sm font-medium">Milestones</span>
+                              <span className="text-sm font-medium">
+                                Milestones
+                              </span>
                             </div>
                             <Button
                               variant="ghost"
@@ -367,84 +447,136 @@ export function SettingsContent({ profile, goals, milestonesMap, userEmail }: Se
 
                           {isAddingMilestone === goal.id && (
                             <form
-                              onSubmit={(e) => handleMilestoneSubmit(goal.id, e)}
+                              onSubmit={(e) =>
+                                handleMilestoneSubmit(goal.id, e)
+                              }
                               className="mb-3 p-3 bg-white rounded-lg space-y-3"
                             >
                               <div className="grid gap-2">
-                                <Label className="text-xs">Milestone Name</Label>
-                                <Input name="name" placeholder="e.g., First $50K" required className="h-8 text-sm" />
+                                <Label className="text-xs">
+                                  Milestone Name
+                                </Label>
+                                <Input
+                                  name="name"
+                                  placeholder="e.g., First $50K"
+                                  required
+                                  className="h-8 text-sm"
+                                />
                               </div>
                               <div className="grid grid-cols-2 gap-2">
                                 <div className="grid gap-1">
-                                  <Label className="text-xs">Target Amount</Label>
-                                  <Input name="target_amount" type="number" step="0.01" required className="h-8 text-sm" />
+                                  <Label className="text-xs">
+                                    Target Amount
+                                  </Label>
+                                  <Input
+                                    name="target_amount"
+                                    type="number"
+                                    step="0.01"
+                                    required
+                                    className="h-8 text-sm"
+                                  />
                                 </div>
                                 <div className="grid gap-1">
                                   <Label className="text-xs">Target Date</Label>
-                                  <Input name="target_date" type="date" className="h-8 text-sm" />
+                                  <Input
+                                    name="target_date"
+                                    type="date"
+                                    className="h-8 text-sm"
+                                  />
                                 </div>
                               </div>
                               <div className="flex gap-2">
-                                <Button type="submit" size="sm" disabled={loading}>Add</Button>
-                                <Button type="button" size="sm" variant="outline" onClick={() => setIsAddingMilestone(null)}>Cancel</Button>
+                                <Button
+                                  type="submit"
+                                  size="sm"
+                                  disabled={loading}
+                                >
+                                  Add
+                                </Button>
+                                <Button
+                                  type="button"
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => setIsAddingMilestone(null)}
+                                >
+                                  Cancel
+                                </Button>
                               </div>
                             </form>
                           )}
 
-                          {milestones.length === 0 && isAddingMilestone !== goal.id ? (
+                          {milestones.length === 0 &&
+                          isAddingMilestone !== goal.id ? (
                             <p className="text-sm text-muted-foreground text-center py-3">
-                              No milestones yet. Add checkpoints to track your progress!
+                              No milestones yet. Add checkpoints to track your
+                              progress!
                             </p>
                           ) : (
                             <div className="space-y-2">
-                              {milestones.map((milestone) => (
+                              {milestones.map((milestone) =>
                                 editingMilestoneId === milestone.id ? (
                                   <form
                                     key={milestone.id}
-                                    onSubmit={(e) => handleMilestoneUpdate(milestone.id, e)}
+                                    onSubmit={(e) =>
+                                      handleMilestoneUpdate(milestone.id, e)
+                                    }
                                     className="p-3 bg-white rounded-lg space-y-3 border border-amber-200"
                                   >
                                     <div className="grid gap-2">
-                                      <Label className="text-xs">Milestone Name</Label>
-                                      <Input 
-                                        name="name" 
+                                      <Label className="text-xs">
+                                        Milestone Name
+                                      </Label>
+                                      <Input
+                                        name="name"
                                         defaultValue={milestone.name}
-                                        placeholder="e.g., First $50K" 
-                                        required 
-                                        className="h-8 text-sm" 
+                                        placeholder="e.g., First $50K"
+                                        required
+                                        className="h-8 text-sm"
                                       />
                                     </div>
                                     <div className="grid grid-cols-2 gap-2">
                                       <div className="grid gap-1">
-                                        <Label className="text-xs">Target Amount</Label>
-                                        <Input 
-                                          name="target_amount" 
-                                          type="number" 
-                                          step="0.01" 
+                                        <Label className="text-xs">
+                                          Target Amount
+                                        </Label>
+                                        <Input
+                                          name="target_amount"
+                                          type="number"
+                                          step="0.01"
                                           defaultValue={milestone.target_amount}
-                                          required 
-                                          className="h-8 text-sm" 
+                                          required
+                                          className="h-8 text-sm"
                                         />
                                       </div>
                                       <div className="grid gap-1">
-                                        <Label className="text-xs">Target Date</Label>
-                                        <Input 
-                                          name="target_date" 
-                                          type="date" 
-                                          defaultValue={milestone.target_date || ""}
-                                          className="h-8 text-sm" 
+                                        <Label className="text-xs">
+                                          Target Date
+                                        </Label>
+                                        <Input
+                                          name="target_date"
+                                          type="date"
+                                          defaultValue={
+                                            milestone.target_date || ""
+                                          }
+                                          className="h-8 text-sm"
                                         />
                                       </div>
                                     </div>
                                     <div className="flex gap-2">
-                                      <Button type="submit" size="sm" disabled={loading}>
+                                      <Button
+                                        type="submit"
+                                        size="sm"
+                                        disabled={loading}
+                                      >
                                         {loading ? "Saving..." : "Save"}
                                       </Button>
-                                      <Button 
-                                        type="button" 
-                                        size="sm" 
-                                        variant="outline" 
-                                        onClick={() => setEditingMilestoneId(null)}
+                                      <Button
+                                        type="button"
+                                        size="sm"
+                                        variant="outline"
+                                        onClick={() =>
+                                          setEditingMilestoneId(null)
+                                        }
                                       >
                                         Cancel
                                       </Button>
@@ -454,40 +586,61 @@ export function SettingsContent({ profile, goals, milestonesMap, userEmail }: Se
                                   <div
                                     key={milestone.id}
                                     className={`flex items-center justify-between p-2 rounded-md ${
-                                      milestone.is_achieved ? "bg-emerald-50" : "bg-white"
+                                      milestone.is_achieved
+                                        ? "bg-emerald-50"
+                                        : "bg-white"
                                     }`}
                                   >
                                     <div className="flex items-center gap-2">
                                       <button
-                                        onClick={() => markMilestoneAchieved(milestone.id, !milestone.is_achieved)}
+                                        onClick={() =>
+                                          markMilestoneAchieved(
+                                            milestone.id,
+                                            !milestone.is_achieved
+                                          )
+                                        }
                                         className={`h-5 w-5 rounded-full border-2 flex items-center justify-center transition-colors ${
                                           milestone.is_achieved
                                             ? "bg-emerald-500 border-emerald-500 text-white"
                                             : "border-slate-300 hover:border-emerald-400"
                                         }`}
                                       >
-                                        {milestone.is_achieved && <Check className="h-3 w-3" />}
+                                        {milestone.is_achieved && (
+                                          <Check className="h-3 w-3" />
+                                        )}
                                       </button>
                                       <div>
-                                        <span className={`text-sm font-medium ${milestone.is_achieved ? "line-through text-muted-foreground" : ""}`}>
+                                        <span
+                                          className={`text-sm font-medium ${
+                                            milestone.is_achieved
+                                              ? "line-through text-muted-foreground"
+                                              : ""
+                                          }`}
+                                        >
                                           {milestone.name}
                                         </span>
                                         <span className="text-xs text-muted-foreground ml-2">
-                                          {formatCurrency(milestone.target_amount)}
+                                          {formatCurrency(
+                                            milestone.target_amount
+                                          )}
                                         </span>
                                       </div>
                                     </div>
                                     <div className="flex items-center gap-1">
                                       {milestone.target_date && (
                                         <span className="text-xs text-muted-foreground mr-1">
-                                          {new Date(milestone.target_date).toLocaleDateString()}
+                                          {new Date(
+                                            milestone.target_date
+                                          ).toLocaleDateString()}
                                         </span>
                                       )}
                                       <Button
                                         variant="ghost"
                                         size="sm"
                                         className="h-6 w-6 p-0"
-                                        onClick={() => setEditingMilestoneId(milestone.id)}
+                                        onClick={() =>
+                                          setEditingMilestoneId(milestone.id)
+                                        }
                                       >
                                         <Edit2 className="h-3 w-3" />
                                       </Button>
@@ -495,14 +648,16 @@ export function SettingsContent({ profile, goals, milestonesMap, userEmail }: Se
                                         variant="ghost"
                                         size="sm"
                                         className="h-6 w-6 p-0 text-destructive hover:text-destructive"
-                                        onClick={() => deleteMilestone(milestone.id)}
+                                        onClick={() =>
+                                          deleteMilestone(milestone.id)
+                                        }
                                       >
                                         <X className="h-3 w-3" />
                                       </Button>
                                     </div>
                                   </div>
                                 )
-                              ))}
+                              )}
                             </div>
                           )}
                         </div>
@@ -534,7 +689,10 @@ function GoalForm({
   isFirst?: boolean;
 }) {
   return (
-    <form onSubmit={onSubmit} className="p-4 rounded-lg border bg-slate-50 space-y-4">
+    <form
+      onSubmit={onSubmit}
+      className="p-4 rounded-lg border bg-slate-50 space-y-4"
+    >
       <div className="grid gap-3">
         <div className="grid gap-2">
           <Label>Goal Name *</Label>
@@ -612,7 +770,9 @@ function GoalForm({
                   type="radio"
                   name="color"
                   value={color}
-                  defaultChecked={goal?.color === color || (!goal && color === "amber")}
+                  defaultChecked={
+                    goal?.color === color || (!goal && color === "amber")
+                  }
                   className="sr-only peer"
                 />
                 <div
@@ -649,4 +809,3 @@ function GoalForm({
     </form>
   );
 }
-

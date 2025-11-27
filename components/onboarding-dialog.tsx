@@ -22,7 +22,10 @@ interface OnboardingDialogProps {
 
 type Step = "welcome" | "profile" | "goal" | "complete";
 
-export function OnboardingDialog({ open, onOpenChange }: OnboardingDialogProps) {
+export function OnboardingDialog({
+  open,
+  onOpenChange,
+}: OnboardingDialogProps) {
   const [step, setStep] = useState<Step>("welcome");
   const [isOpen, setIsOpen] = useState(open);
 
@@ -81,14 +84,19 @@ export function OnboardingDialog({ open, onOpenChange }: OnboardingDialogProps) 
               <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 shadow-lg shadow-emerald-500/30">
                 <Rocket className="h-8 w-8 text-white" />
               </div>
-              <DialogTitle className="text-2xl">Welcome to FinanceHub! 🎉</DialogTitle>
+              <DialogTitle className="text-2xl">
+                Welcome to FinanceHub! 🎉
+              </DialogTitle>
               <DialogDescription className="text-base">
-                Your personal finance command center. Let&apos;s set up your profile and define your first financial mission.
+                Your personal finance command center. Let&apos;s set up your
+                profile and define your first financial mission.
               </DialogDescription>
             </DialogHeader>
             <div className="mt-6 space-y-4">
               <div className="rounded-lg bg-gradient-to-r from-emerald-50 to-teal-50 p-4 border border-emerald-200">
-                <h4 className="font-semibold text-emerald-800">What you can track:</h4>
+                <h4 className="font-semibold text-emerald-800">
+                  What you can track:
+                </h4>
                 <ul className="mt-2 space-y-1 text-sm text-emerald-700">
                   <li>✓ Income & Expenses</li>
                   <li>✓ Investment Portfolio</li>
@@ -96,7 +104,10 @@ export function OnboardingDialog({ open, onOpenChange }: OnboardingDialogProps) 
                   <li>✓ Progress visualization</li>
                 </ul>
               </div>
-              <Button onClick={() => setStep("profile")} className="w-full h-12 text-base">
+              <Button
+                onClick={() => setStep("profile")}
+                className="w-full h-12 text-base"
+              >
                 Let&apos;s Get Started
               </Button>
             </div>
@@ -112,7 +123,9 @@ export function OnboardingDialog({ open, onOpenChange }: OnboardingDialogProps) 
                 </div>
                 <div>
                   <DialogTitle>Your Profile</DialogTitle>
-                  <DialogDescription>Tell us a bit about yourself</DialogDescription>
+                  <DialogDescription>
+                    Tell us a bit about yourself
+                  </DialogDescription>
                 </div>
               </div>
             </DialogHeader>
@@ -123,7 +136,9 @@ export function OnboardingDialog({ open, onOpenChange }: OnboardingDialogProps) 
                   id="full_name"
                   placeholder="Your name"
                   value={formData.full_name}
-                  onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, full_name: e.target.value })
+                  }
                   className="h-11"
                 />
               </div>
@@ -134,12 +149,15 @@ export function OnboardingDialog({ open, onOpenChange }: OnboardingDialogProps) 
                   id="birthday"
                   type="date"
                   value={formData.birthday}
-                  onChange={(e) => setFormData({ ...formData, birthday: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, birthday: e.target.value })
+                  }
                   className="h-11"
                 />
                 {getAge() !== null && (
                   <p className="text-sm text-muted-foreground">
-                    You&apos;re {getAge()} years old — great time to build wealth! 💪
+                    You&apos;re {getAge()} years old — great time to build
+                    wealth! 💪
                   </p>
                 )}
               </div>
@@ -149,7 +167,9 @@ export function OnboardingDialog({ open, onOpenChange }: OnboardingDialogProps) 
                 <div className="flex gap-2">
                   <button
                     type="button"
-                    onClick={() => setFormData({ ...formData, currency: "CAD" })}
+                    onClick={() =>
+                      setFormData({ ...formData, currency: "CAD" })
+                    }
                     className={`flex-1 h-11 rounded-lg border-2 transition-all ${
                       formData.currency === "CAD"
                         ? "border-emerald-500 bg-emerald-50"
@@ -160,7 +180,9 @@ export function OnboardingDialog({ open, onOpenChange }: OnboardingDialogProps) 
                   </button>
                   <button
                     type="button"
-                    onClick={() => setFormData({ ...formData, currency: "USD" })}
+                    onClick={() =>
+                      setFormData({ ...formData, currency: "USD" })
+                    }
                     className={`flex-1 h-11 rounded-lg border-2 transition-all ${
                       formData.currency === "USD"
                         ? "border-emerald-500 bg-emerald-50"
@@ -173,7 +195,11 @@ export function OnboardingDialog({ open, onOpenChange }: OnboardingDialogProps) 
               </div>
 
               <div className="flex gap-3 pt-4">
-                <Button variant="outline" onClick={() => setStep("welcome")} className="flex-1">
+                <Button
+                  variant="outline"
+                  onClick={() => setStep("welcome")}
+                  className="flex-1"
+                >
                   Back
                 </Button>
                 <Button onClick={() => setStep("goal")} className="flex-1">
@@ -193,14 +219,17 @@ export function OnboardingDialog({ open, onOpenChange }: OnboardingDialogProps) 
                 </div>
                 <div>
                   <DialogTitle>Your Mission</DialogTitle>
-                  <DialogDescription>Define your primary financial goal</DialogDescription>
+                  <DialogDescription>
+                    Define your primary financial goal
+                  </DialogDescription>
                 </div>
               </div>
             </DialogHeader>
             <div className="mt-6 space-y-4">
               <div className="rounded-lg bg-amber-50 border border-amber-200 p-3">
                 <p className="text-sm text-amber-800">
-                  <strong>Pro tip:</strong> Set a bold, inspiring goal. You can always add milestones and adjust later!
+                  <strong>Pro tip:</strong> Set a bold, inspiring goal. You can
+                  always add milestones and adjust later!
                 </p>
               </div>
 
@@ -210,7 +239,9 @@ export function OnboardingDialog({ open, onOpenChange }: OnboardingDialogProps) 
                   id="goal_name"
                   placeholder="e.g., $500K Net Worth by 30"
                   value={formData.goal_name}
-                  onChange={(e) => setFormData({ ...formData, goal_name: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, goal_name: e.target.value })
+                  }
                   className="h-11"
                 />
               </div>
@@ -223,7 +254,9 @@ export function OnboardingDialog({ open, onOpenChange }: OnboardingDialogProps) 
                     type="number"
                     placeholder="500000"
                     value={formData.goal_amount}
-                    onChange={(e) => setFormData({ ...formData, goal_amount: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, goal_amount: e.target.value })
+                    }
                     className="h-11"
                   />
                 </div>
@@ -233,7 +266,9 @@ export function OnboardingDialog({ open, onOpenChange }: OnboardingDialogProps) 
                     id="goal_date"
                     type="date"
                     value={formData.goal_date}
-                    onChange={(e) => setFormData({ ...formData, goal_date: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, goal_date: e.target.value })
+                    }
                     className="h-11"
                   />
                 </div>
@@ -246,8 +281,12 @@ export function OnboardingDialog({ open, onOpenChange }: OnboardingDialogProps) 
                     <button
                       key={color}
                       type="button"
-                      onClick={() => setFormData({ ...formData, goal_color: color })}
-                      className={`h-10 w-10 rounded-full bg-gradient-to-br ${GOAL_COLORS[color].gradient} 
+                      onClick={() =>
+                        setFormData({ ...formData, goal_color: color })
+                      }
+                      className={`h-10 w-10 rounded-full bg-gradient-to-br ${
+                        GOAL_COLORS[color].gradient
+                      } 
                         ring-2 transition-all ${
                           formData.goal_color === color
                             ? "ring-slate-900 ring-offset-2"
@@ -259,7 +298,11 @@ export function OnboardingDialog({ open, onOpenChange }: OnboardingDialogProps) 
               </div>
 
               <div className="flex gap-3 pt-4">
-                <Button variant="outline" onClick={() => setStep("profile")} className="flex-1">
+                <Button
+                  variant="outline"
+                  onClick={() => setStep("profile")}
+                  className="flex-1"
+                >
                   Back
                 </Button>
                 <Button onClick={() => setStep("complete")} className="flex-1">
@@ -276,9 +319,12 @@ export function OnboardingDialog({ open, onOpenChange }: OnboardingDialogProps) 
               <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-amber-500 to-orange-600 shadow-lg shadow-amber-500/30">
                 <Sparkles className="h-8 w-8 text-white" />
               </div>
-              <DialogTitle className="text-2xl">You&apos;re All Set! 🚀</DialogTitle>
+              <DialogTitle className="text-2xl">
+                You&apos;re All Set! 🚀
+              </DialogTitle>
               <DialogDescription className="text-base">
-                Your financial command center is ready. Time to start tracking your journey!
+                Your financial command center is ready. Time to start tracking
+                your journey!
               </DialogDescription>
             </DialogHeader>
 
@@ -300,14 +346,18 @@ export function OnboardingDialog({ open, onOpenChange }: OnboardingDialogProps) 
                   )}
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Currency</span>
-                    <span className="font-medium">{formData.currency === "CAD" ? "🇨🇦 CAD" : "🇺🇸 USD"}</span>
+                    <span className="font-medium">
+                      {formData.currency === "CAD" ? "🇨🇦 CAD" : "🇺🇸 USD"}
+                    </span>
                   </div>
                   {formData.goal_name && (
                     <>
                       <div className="my-2 border-t" />
                       <div className="flex justify-between">
                         <span className="text-muted-foreground">Goal</span>
-                        <span className="font-medium">{formData.goal_name}</span>
+                        <span className="font-medium">
+                          {formData.goal_name}
+                        </span>
                       </div>
                       {formData.goal_amount && (
                         <div className="flex justify-between">
@@ -322,7 +372,11 @@ export function OnboardingDialog({ open, onOpenChange }: OnboardingDialogProps) 
                 </div>
               </div>
 
-              <Button onClick={handleComplete} disabled={loading} className="w-full h-12 text-base">
+              <Button
+                onClick={handleComplete}
+                disabled={loading}
+                className="w-full h-12 text-base"
+              >
                 {loading ? "Setting up..." : "Launch Dashboard →"}
               </Button>
 
@@ -339,4 +393,3 @@ export function OnboardingDialog({ open, onOpenChange }: OnboardingDialogProps) 
     </Dialog>
   );
 }
-

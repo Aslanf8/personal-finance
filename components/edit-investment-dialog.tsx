@@ -36,6 +36,12 @@ export function EditInvestmentDialog({
   const [open, setOpen] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
 
+  // Helper to get local date string (not UTC)
+  const getLocalDateString = () => {
+    const now = new Date();
+    return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+  };
+
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
@@ -72,7 +78,7 @@ export function EditInvestmentDialog({
               name="date"
               type="date"
               defaultValue={
-                investment.date || new Date().toISOString().split("T")[0]
+                investment.date || getLocalDateString()
               }
               className="col-span-3"
               required

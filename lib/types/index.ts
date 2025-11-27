@@ -120,6 +120,24 @@ export interface Investment {
   account_label: string | null;
 }
 
+// Scan Investment Types
+export interface ScannedInvestment {
+  symbol: string;
+  quantity: number;
+  avg_cost: number;
+  asset_type: 'stock' | 'crypto';
+  account_label: string;
+  date: string;
+}
+
+export interface ScanInvestmentResult {
+  success: boolean;
+  investments: ScannedInvestment[];
+  summary: string | null;
+  confidence: 'high' | 'medium' | 'low';
+  error?: string;
+}
+
 // Helper type for goal progress calculation
 export interface GoalProgress {
   goal: FinancialGoal;

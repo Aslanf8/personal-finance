@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { EditInvestmentDialog } from "@/components/edit-investment-dialog";
+import { ScanInvestmentDialog } from "@/components/scan-investment-dialog";
 import {
   addInvestment,
   deleteInvestment,
@@ -11,6 +12,7 @@ import {
 } from "@/app/(dashboard)/investments/actions";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Scan } from "lucide-react";
 
 type Investment = {
   id: string;
@@ -27,9 +29,11 @@ const ACCOUNT_LABELS = ['Margin', 'TFSA', 'RRSP', 'FHSA', 'Cash', 'Crypto'] as c
 export function InvestmentPortfolio({
   initialInvestments,
   initialPrices = {},
+  autoOpenScan = false,
 }: {
   initialInvestments: Investment[];
   initialPrices?: Record<string, number>;
+  autoOpenScan?: boolean;
 }) {
   const [prices, setPrices] = useState<Record<string, number>>(initialPrices);
   const [loading, setLoading] = useState(false);
@@ -45,6 +49,12 @@ export function InvestmentPortfolio({
   const [hypotheticalQuantities, setHypotheticalQuantities] = useState<
     Record<string, number>
   >({});
+
+  // Helper to get local date string (not UTC)
+  const getLocalDateString = () => {
+    const now = new Date();
+    return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+  };
 
   // ... existing fetchPrices ...
 
@@ -434,11 +444,19 @@ export function InvestmentPortfolio({
         </Card>
       </div>
 
-      <div className="flex flex-col items-end gap-2">
-        <Button onClick={fetchPrices} disabled={loading}>
-          {loading ? "Updating..." : "Refresh Prices"}
-        </Button>
-        {error && <div className="text-sm text-red-500">{error}</div>}
+      <div className="flex items-center justify-between gap-2">
+        <ScanInvestmentDialog defaultOpen={autoOpenScan}>
+          <Button variant="outline" className="gap-2">
+            <Scan className="h-4 w-4" />
+            Scan Investment
+          </Button>
+        </ScanInvestmentDialog>
+        <div className="flex flex-col items-end gap-2">
+          <Button onClick={fetchPrices} disabled={loading}>
+            {loading ? "Updating..." : "Refresh Prices"}
+          </Button>
+          {error && <div className="text-sm text-red-500">{error}</div>}
+        </div>
       </div>
 
       <div className="grid md:grid-cols-3 gap-6">
@@ -710,7 +728,7 @@ export function InvestmentPortfolio({
                     name="date"
                     type="date"
                     required
-                    defaultValue={new Date().toISOString().split("T")[0]}
+                    defaultValue={getLocalDateString()}
                   />
                 </div>
                 <div className="grid gap-2">

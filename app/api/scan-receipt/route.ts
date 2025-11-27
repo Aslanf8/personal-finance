@@ -13,6 +13,15 @@ const EXPENSE_CATEGORIES = [
 
 const INCOME_CATEGORIES = ["Salary", "Bonus", "Investment", "Deposit", "Other"];
 
+// Helper to get local date in YYYY-MM-DD format (not UTC)
+function getLocalDateString(): string {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  const day = String(now.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
 const SYSTEM_PROMPT = `You are a financial document analyzer. Your job is to extract transaction information from receipts, invoices, bank statements, payslips, or any financial document.
 
 RULES:
@@ -32,10 +41,14 @@ CURRENCY:
 - Default to CAD unless you clearly see USD, US$, or US Dollar
 - Look for currency symbols: $ alone = CAD, US$ or USD = USD
 
-DATE:
-- Use the transaction/purchase date, not the print date
-- Format: YYYY-MM-DD
-- If no date visible, use today: ${new Date().toISOString().split('T')[0]}
+DATE - CRITICAL RULES:
+- ONLY extract a date if you can ABSOLUTELY CONFIRM it is clearly visible and readable on the document
+- The date must be explicitly shown (e.g., "2025-11-27", "Nov 27, 2025", "27/11/2025", etc.)
+- DO NOT guess or infer dates
+- DO NOT use dates that are unclear, partially visible, or ambiguous
+- If the date is not 100% certain and completely readable, DO NOT include a date field - the system will use today's date programmatically
+- Format when included: YYYY-MM-DD
+- Today's date (for reference only, do not use unless absolutely certain): ${getLocalDateString()}
 
 CONFIDENCE:
 - high: Clear image, all fields readable
@@ -130,12 +143,15 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Get current date for default (local time, not UTC)
+    const currentDate = getLocalDateString();
+
     // Validate and sanitize transactions
     const transactions: ScannedTransaction[] = (parsed.transactions || []).map((t: Record<string, unknown>) => ({
       amount: typeof t.amount === 'number' ? t.amount : parseFloat(String(t.amount)) || 0,
       description: String(t.description || 'Unknown'),
       category: validateCategory(String(t.category || ''), String(t.type || 'expense')),
-      date: validateDate(String(t.date || '')),
+      date: validateDate(String(t.date || ''), currentDate),
       type: t.type === 'income' ? 'income' : 'expense',
       currency: t.currency === 'USD' ? 'USD' : 'CAD',
     }));
@@ -193,11 +209,33 @@ function validateCategory(category: string, type: string): string {
   return type === 'income' ? 'Other' : 'Miscellaneous';
 }
 
-function validateDate(date: string): string {
-  const parsed = new Date(date);
-  if (isNaN(parsed.getTime())) {
-    return new Date().toISOString().split('T')[0];
+function validateDate(date: string, defaultDate: string): string {
+  // If date is empty, null, or just whitespace, use default
+  if (!date || !date.trim()) {
+    return defaultDate;
   }
-  return parsed.toISOString().split('T')[0];
+
+  // Try to parse the date
+  const parsed = new Date(date);
+  
+  // If invalid date, use default
+  if (isNaN(parsed.getTime())) {
+    return defaultDate;
+  }
+
+  // Validate the parsed date is reasonable (not too far in past/future)
+  const today = new Date();
+  const yearDiff = Math.abs(today.getFullYear() - parsed.getFullYear());
+  
+  // If date is more than 10 years in the past or future, likely invalid - use default
+  if (yearDiff > 10) {
+    return defaultDate;
+  }
+
+  // Return date in local format (YYYY-MM-DD), not UTC
+  const year = parsed.getFullYear();
+  const month = String(parsed.getMonth() + 1).padStart(2, '0');
+  const day = String(parsed.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
 }
 

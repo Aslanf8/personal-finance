@@ -71,10 +71,16 @@ export function expandRecurringTransactions<T extends RecurringTransaction & { i
         const yearMonth = `${currentMonth.getFullYear()}-${String(currentMonth.getMonth() + 1).padStart(2, '0')}`
         const uniqueId = isOriginal ? t.id : `${t.id}-${yearMonth}`
         
+        // Format date in local time (YYYY-MM-DD), not UTC
+        const year = projectedDate.getFullYear()
+        const month = String(projectedDate.getMonth() + 1).padStart(2, '0')
+        const day = String(projectedDate.getDate()).padStart(2, '0')
+        const dateString = `${year}-${month}-${day}`
+        
         result.push({
           ...t,
           id: uniqueId,
-          date: projectedDate.toISOString().split('T')[0],
+          date: dateString,
           // Mark the original transaction vs projected copies
           _isProjected: !isOriginal,
           _originalId: t.id, // Keep reference to original for editing

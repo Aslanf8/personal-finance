@@ -23,18 +23,14 @@ import {
   Save,
   Pencil,
 } from "lucide-react";
-import { ScanResult, ScannedTransaction } from "@/lib/types";
-import { addTransaction } from "@/app/(dashboard)/transactions/actions";
+import { ScanInvestmentResult, ScannedInvestment } from "@/lib/types";
+import { addInvestment } from "@/app/(dashboard)/investments/actions";
 
-const EXPENSE_CATEGORIES = [
-  "Housing", "Transport", "Food", "Utilities", "Insurance",
-  "Healthcare", "Saving", "Personal", "Entertainment", "Credit", "Miscellaneous"
-];
+const ASSET_TYPES = ['stock', 'crypto'] as const;
+const ACCOUNT_LABELS = ['Margin', 'TFSA', 'RRSP', 'FHSA', 'Cash', 'Crypto'] as const;
 
-const INCOME_CATEGORIES = ["Salary", "Bonus", "Investment", "Deposit", "Other"];
-
-interface ScanTransactionDialogProps {
-  onScanComplete: (transactions: ScannedTransaction[]) => void;
+interface ScanInvestmentDialogProps {
+  onScanComplete?: (investments: ScannedInvestment[]) => void;
   children?: React.ReactNode;
   defaultOpen?: boolean;
   onOpenChange?: (open: boolean) => void;
@@ -42,12 +38,12 @@ interface ScanTransactionDialogProps {
 
 type ScanState = "camera" | "preview" | "analyzing" | "results" | "saving" | "error";
 
-export function ScanTransactionDialog({ 
+export function ScanInvestmentDialog({ 
   onScanComplete, 
   children, 
   defaultOpen = false,
   onOpenChange 
-}: ScanTransactionDialogProps) {
+}: ScanInvestmentDialogProps) {
   const [open, setOpen] = useState(defaultOpen);
   const [state, setState] = useState<ScanState>("camera");
 
@@ -68,8 +64,8 @@ export function ScanTransactionDialog({
     onOpenChange?.(isOpen);
   };
   const [capturedImage, setCapturedImage] = useState<string | null>(null);
-  const [result, setResult] = useState<ScanResult | null>(null);
-  const [editableTransactions, setEditableTransactions] = useState<ScannedTransaction[]>([]);
+  const [result, setResult] = useState<ScanInvestmentResult | null>(null);
+  const [editableInvestments, setEditableInvestments] = useState<ScannedInvestment[]>([]);
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [cameraError, setCameraError] = useState<string | null>(null);
@@ -107,7 +103,7 @@ export function ScanTransactionDialog({
   const retake = () => {
     setCapturedImage(null);
     setResult(null);
-    setEditableTransactions([]);
+    setEditableInvestments([]);
     setEditingIndex(null);
     setError(null);
     setState("camera");
@@ -120,13 +116,13 @@ export function ScanTransactionDialog({
     setError(null);
 
     try {
-      const response = await fetch("/api/scan-receipt", {
+      const response = await fetch("/api/scan-investment", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ image: capturedImage }),
       });
 
-      const data: ScanResult = await response.json();
+      const data: ScanInvestmentResult = await response.json();
 
       if (!data.success) {
         setError(data.error || "Failed to analyze image");
@@ -134,16 +130,16 @@ export function ScanTransactionDialog({
         return;
       }
 
-      // Ensure all transactions have a valid date (default to current local date, not UTC)
+      // Ensure all investments have a valid date (default to current local date, not UTC)
       const now = new Date();
       const currentDate = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
-      const transactionsWithDates = data.transactions.map(t => ({
-        ...t,
-        date: t.date && t.date.trim() ? t.date : currentDate
+      const investmentsWithDates = data.investments.map(inv => ({
+        ...inv,
+        date: inv.date && inv.date.trim() ? inv.date : currentDate
       }));
 
       setResult(data);
-      setEditableTransactions(transactionsWithDates);
+      setEditableInvestments(investmentsWithDates);
       setState("results");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Network error");
@@ -151,11 +147,13 @@ export function ScanTransactionDialog({
     }
   };
 
-  const updateTransaction = (index: number, field: keyof ScannedTransaction, value: string | number) => {
-    setEditableTransactions(prev => {
+  const updateInvestment = (index: number, field: keyof ScannedInvestment, value: string | number) => {
+    setEditableInvestments(prev => {
       const updated = [...prev];
-      if (field === "amount") {
+      if (field === "quantity" || field === "avg_cost") {
         updated[index] = { ...updated[index], [field]: parseFloat(value as string) || 0 };
+      } else if (field === "symbol") {
+        updated[index] = { ...updated[index], [field]: String(value).toUpperCase().trim() };
       } else {
         updated[index] = { ...updated[index], [field]: value };
       }
@@ -163,24 +161,24 @@ export function ScanTransactionDialog({
     });
   };
 
-  const handleSaveTransaction = async (index: number) => {
-    const t = editableTransactions[index];
+  const handleSaveInvestment = async (index: number) => {
+    const inv = editableInvestments[index];
     setState("saving");
 
     try {
       const formData = new FormData();
-      formData.append("amount", t.amount.toString());
-      formData.append("description", t.description);
-      formData.append("category", t.category);
-      formData.append("date", t.date);
-      formData.append("type", t.type);
-      formData.append("currency", t.currency);
+      formData.append("symbol", inv.symbol);
+      formData.append("quantity", inv.quantity.toString());
+      formData.append("avg_cost", inv.avg_cost.toString());
+      formData.append("asset_type", inv.asset_type);
+      formData.append("account_label", inv.account_label);
+      formData.append("date", inv.date);
 
-      await addTransaction(formData);
+      await addInvestment(formData);
       
-      // Remove saved transaction from list
-      const remaining = editableTransactions.filter((_, i) => i !== index);
-      setEditableTransactions(remaining);
+      // Remove saved investment from list
+      const remaining = editableInvestments.filter((_, i) => i !== index);
+      setEditableInvestments(remaining);
       
       if (remaining.length === 0) {
         handleClose();
@@ -198,16 +196,16 @@ export function ScanTransactionDialog({
     setState("saving");
 
     try {
-      for (const t of editableTransactions) {
+      for (const inv of editableInvestments) {
         const formData = new FormData();
-        formData.append("amount", t.amount.toString());
-        formData.append("description", t.description);
-        formData.append("category", t.category);
-        formData.append("date", t.date);
-        formData.append("type", t.type);
-        formData.append("currency", t.currency);
+        formData.append("symbol", inv.symbol);
+        formData.append("quantity", inv.quantity.toString());
+        formData.append("avg_cost", inv.avg_cost.toString());
+        formData.append("asset_type", inv.asset_type);
+        formData.append("account_label", inv.account_label);
+        formData.append("date", inv.date);
 
-        await addTransaction(formData);
+        await addInvestment(formData);
       }
       
       handleClose();
@@ -223,7 +221,7 @@ export function ScanTransactionDialog({
       setState("camera");
       setCapturedImage(null);
       setResult(null);
-      setEditableTransactions([]);
+      setEditableInvestments([]);
       setEditingIndex(null);
       setError(null);
       setCameraError(null);
@@ -247,15 +245,13 @@ export function ScanTransactionDialog({
     }
   };
 
-  const categories = (type: string) => type === "income" ? INCOME_CATEGORIES : EXPENSE_CATEGORIES;
-
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
         {children || (
           <Button variant="outline" size="sm" className="gap-2">
             <Scan className="h-4 w-4" />
-            Scan Receipt
+            Scan Investment
           </Button>
         )}
       </DialogTrigger>
@@ -263,14 +259,14 @@ export function ScanTransactionDialog({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Camera className="h-5 w-5" />
-            Scan Transaction
+            Scan Investment
           </DialogTitle>
           <DialogDescription>
-            {state === "camera" && "Take a photo of your receipt, invoice, or financial document"}
+            {state === "camera" && "Take a photo of your brokerage statement, trade confirmation, or investment document"}
             {state === "preview" && "Review your photo before analyzing"}
             {state === "analyzing" && "Analyzing document..."}
-            {state === "results" && "Review and edit extracted transactions"}
-            {state === "saving" && "Saving transaction..."}
+            {state === "results" && "Review and edit extracted investments"}
+            {state === "saving" && "Saving investment..."}
             {state === "error" && "Something went wrong"}
           </DialogDescription>
         </DialogHeader>
@@ -348,7 +344,7 @@ export function ScanTransactionDialog({
               <div className="aspect-[4/3] bg-muted rounded-lg overflow-hidden">
                 <img
                   src={capturedImage}
-                  alt="Captured receipt"
+                  alt="Captured document"
                   className="w-full h-full object-contain"
                 />
               </div>
@@ -370,7 +366,7 @@ export function ScanTransactionDialog({
             <div className="py-12 flex flex-col items-center justify-center">
               <Loader2 className="h-10 w-10 animate-spin text-primary mb-4" />
               <p className="text-sm text-muted-foreground">
-                {state === "analyzing" ? "Analyzing your document..." : "Saving transaction..."}
+                {state === "analyzing" ? "Analyzing your document..." : "Saving investment..."}
               </p>
               <p className="text-xs text-muted-foreground mt-1">This may take a few seconds</p>
             </div>
@@ -386,14 +382,14 @@ export function ScanTransactionDialog({
                     {result.confidence.charAt(0).toUpperCase() + result.confidence.slice(1)} confidence
                   </span>
                   <span className="text-xs text-muted-foreground">
-                    {editableTransactions.length} transaction{editableTransactions.length !== 1 ? "s" : ""}
+                    {editableInvestments.length} investment{editableInvestments.length !== 1 ? "s" : ""}
                   </span>
                 </div>
               )}
 
-              {/* Editable Transactions List */}
+              {/* Editable Investments List */}
               <div className="space-y-3 max-h-[350px] overflow-y-auto">
-                {editableTransactions.map((t, index) => (
+                {editableInvestments.map((inv, index) => (
                   <div
                     key={index}
                     className="p-3 border rounded-lg bg-card space-y-3"
@@ -403,101 +399,70 @@ export function ScanTransactionDialog({
                       <div className="space-y-3">
                         <div className="grid grid-cols-2 gap-2">
                           <div>
-                            <Label className="text-xs">Description</Label>
+                            <Label className="text-xs">Symbol</Label>
                             <Input
-                              value={t.description}
-                              onChange={(e) => updateTransaction(index, "description", e.target.value)}
+                              value={inv.symbol}
+                              onChange={(e) => updateInvestment(index, "symbol", e.target.value)}
                               className="h-8 text-sm"
+                              placeholder="AAPL"
                             />
                           </div>
                           <div>
-                            <Label className="text-xs">Amount</Label>
+                            <Label className="text-xs">Quantity</Label>
                             <Input
                               type="number"
-                              step="0.01"
-                              value={t.amount}
-                              onChange={(e) => updateTransaction(index, "amount", e.target.value)}
+                              step="any"
+                              value={inv.quantity}
+                              onChange={(e) => updateInvestment(index, "quantity", e.target.value)}
                               className="h-8 text-sm"
                             />
                           </div>
                         </div>
                         <div className="grid grid-cols-2 gap-2">
                           <div>
-                            <Label className="text-xs">Category</Label>
-                            <select
-                              value={t.category}
-                              onChange={(e) => updateTransaction(index, "category", e.target.value)}
-                              className="flex h-8 w-full rounded-md border border-input bg-background px-2 py-1 text-sm"
-                            >
-                              {categories(t.type).map(cat => (
-                                <option key={cat} value={cat}>{cat}</option>
-                              ))}
-                            </select>
+                            <Label className="text-xs">Avg Cost</Label>
+                            <Input
+                              type="number"
+                              step="any"
+                              value={inv.avg_cost}
+                              onChange={(e) => updateInvestment(index, "avg_cost", e.target.value)}
+                              className="h-8 text-sm"
+                            />
                           </div>
                           <div>
                             <Label className="text-xs">Date</Label>
                             <Input
                               type="date"
-                              value={t.date}
-                              onChange={(e) => updateTransaction(index, "date", e.target.value)}
+                              value={inv.date}
+                              onChange={(e) => updateInvestment(index, "date", e.target.value)}
                               className="h-8 text-sm"
                             />
                           </div>
                         </div>
                         <div className="grid grid-cols-2 gap-2">
                           <div>
-                            <Label className="text-xs">Type</Label>
-                            <div className="flex gap-1">
-                              <button
-                                type="button"
-                                onClick={() => updateTransaction(index, "type", "expense")}
-                                className={`flex-1 px-2 py-1 text-xs rounded ${
-                                  t.type === "expense" 
-                                    ? "bg-red-100 text-red-700 border border-red-200" 
-                                    : "bg-muted text-muted-foreground"
-                                }`}
-                              >
-                                Expense
-                              </button>
-                              <button
-                                type="button"
-                                onClick={() => updateTransaction(index, "type", "income")}
-                                className={`flex-1 px-2 py-1 text-xs rounded ${
-                                  t.type === "income" 
-                                    ? "bg-emerald-100 text-emerald-700 border border-emerald-200" 
-                                    : "bg-muted text-muted-foreground"
-                                }`}
-                              >
-                                Income
-                              </button>
-                            </div>
+                            <Label className="text-xs">Asset Type</Label>
+                            <select
+                              value={inv.asset_type}
+                              onChange={(e) => updateInvestment(index, "asset_type", e.target.value)}
+                              className="flex h-8 w-full rounded-md border border-input bg-background px-2 py-1 text-sm"
+                            >
+                              {ASSET_TYPES.map(type => (
+                                <option key={type} value={type}>{type}</option>
+                              ))}
+                            </select>
                           </div>
                           <div>
-                            <Label className="text-xs">Currency</Label>
-                            <div className="flex gap-1">
-                              <button
-                                type="button"
-                                onClick={() => updateTransaction(index, "currency", "CAD")}
-                                className={`flex-1 px-2 py-1 text-xs rounded ${
-                                  t.currency === "CAD" 
-                                    ? "bg-primary text-primary-foreground" 
-                                    : "bg-muted text-muted-foreground"
-                                }`}
-                              >
-                                🇨🇦 CAD
-                              </button>
-                              <button
-                                type="button"
-                                onClick={() => updateTransaction(index, "currency", "USD")}
-                                className={`flex-1 px-2 py-1 text-xs rounded ${
-                                  t.currency === "USD" 
-                                    ? "bg-primary text-primary-foreground" 
-                                    : "bg-muted text-muted-foreground"
-                                }`}
-                              >
-                                🇺🇸 USD
-                              </button>
-                            </div>
+                            <Label className="text-xs">Account</Label>
+                            <select
+                              value={inv.account_label}
+                              onChange={(e) => updateInvestment(index, "account_label", e.target.value)}
+                              className="flex h-8 w-full rounded-md border border-input bg-background px-2 py-1 text-sm"
+                            >
+                              {ACCOUNT_LABELS.map(label => (
+                                <option key={label} value={label}>{label}</option>
+                              ))}
+                            </select>
                           </div>
                         </div>
                         <div className="flex gap-2 pt-2">
@@ -511,7 +476,7 @@ export function ScanTransactionDialog({
                           </Button>
                           <Button 
                             size="sm" 
-                            onClick={() => handleSaveTransaction(index)}
+                            onClick={() => handleSaveInvestment(index)}
                             className="flex-1 gap-1"
                           >
                             <Save className="h-3 w-3" />
@@ -523,28 +488,39 @@ export function ScanTransactionDialog({
                       // View Mode
                       <>
                         <div className="flex items-center justify-between">
-                          <span className="font-medium">{t.description}</span>
                           <div className="flex items-center gap-2">
-                            <span className={`font-bold ${t.type === "income" ? "text-emerald-600" : "text-red-600"}`}>
-                              {t.type === "income" ? "+" : "-"}${t.amount.toFixed(2)}
-                              <span className="ml-1 text-sm">{t.currency === "USD" ? "🇺🇸" : "🇨🇦"}</span>
+                            <span className="font-bold">{inv.symbol}</span>
+                            <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-medium ${
+                              inv.account_label === 'TFSA' ? 'bg-emerald-100 text-emerald-700' :
+                              inv.account_label === 'RRSP' ? 'bg-blue-100 text-blue-700' :
+                              inv.account_label === 'FHSA' ? 'bg-purple-100 text-purple-700' :
+                              inv.account_label === 'Cash' ? 'bg-amber-100 text-amber-700' :
+                              inv.account_label === 'Crypto' ? 'bg-orange-100 text-orange-700' :
+                              'bg-slate-100 text-slate-700'
+                            }`}>
+                              {inv.account_label}
                             </span>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => setEditingIndex(index)}
-                              className="h-7 w-7 p-0"
-                            >
-                              <Pencil className="h-3.5 w-3.5" />
-                            </Button>
+                            <span className="text-xs px-1.5 py-0.5 bg-muted rounded">
+                              {inv.asset_type}
+                            </span>
                           </div>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => setEditingIndex(index)}
+                            className="h-7 w-7 p-0"
+                          >
+                            <Pencil className="h-3.5 w-3.5" />
+                          </Button>
                         </div>
                         <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                          <span className="px-1.5 py-0.5 bg-muted rounded">{t.category}</span>
-                          <span>{t.date}</span>
-                          <span className={`px-1.5 py-0.5 rounded ${t.type === "income" ? "bg-emerald-100 text-emerald-700" : "bg-red-100 text-red-700"}`}>
-                            {t.type}
+                          <span>{inv.quantity} @ ${inv.avg_cost.toFixed(2)}</span>
+                          <span className="font-medium text-foreground">
+                            ${(inv.quantity * inv.avg_cost).toFixed(2)}
                           </span>
+                        </div>
+                        <div className="text-xs text-muted-foreground">
+                          Date: {inv.date}
                         </div>
                       </>
                     )}
@@ -554,15 +530,15 @@ export function ScanTransactionDialog({
 
               {/* Actions */}
               <div className="pt-2 border-t">
-                {editableTransactions.length === 1 ? (
-                  <Button onClick={() => handleSaveTransaction(0)} className="w-full gap-2">
+                {editableInvestments.length === 1 ? (
+                  <Button onClick={() => handleSaveInvestment(0)} className="w-full gap-2">
                     <Save className="h-4 w-4" />
-                    Save Transaction
+                    Save Investment
                   </Button>
                 ) : (
                   <Button onClick={handleSaveAll} className="w-full gap-2">
                     <Save className="h-4 w-4" />
-                    Save All ({editableTransactions.length})
+                    Save All ({editableInvestments.length})
                   </Button>
                 )}
               </div>
@@ -588,3 +564,4 @@ export function ScanTransactionDialog({
     </Dialog>
   );
 }
+

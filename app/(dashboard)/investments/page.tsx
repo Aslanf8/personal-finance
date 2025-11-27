@@ -1,7 +1,14 @@
 import { createClient } from "@/lib/supabase/server";
 import { InvestmentPortfolio } from "@/components/investment-portfolio";
 
-export default async function InvestmentsPage() {
+interface InvestmentsPageProps {
+  searchParams: Promise<{ scan?: string }>;
+}
+
+export default async function InvestmentsPage({ searchParams }: InvestmentsPageProps) {
+  const params = await searchParams;
+  const autoOpenScan = params.scan === "true";
+
   const supabase = await createClient();
 
   const [investmentsResult, pricesResult] = await Promise.all([
@@ -24,6 +31,7 @@ export default async function InvestmentsPage() {
       <InvestmentPortfolio
         initialInvestments={investments}
         initialPrices={prices}
+        autoOpenScan={autoOpenScan}
       />
     </div>
   );
