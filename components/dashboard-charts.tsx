@@ -12,7 +12,13 @@ import {
   Cell,
   ReferenceLine,
 } from "recharts";
-import { TrendingUp, TrendingDown, Calendar, ArrowUpRight, ArrowDownRight } from "lucide-react";
+import {
+  TrendingUp,
+  TrendingDown,
+  Calendar,
+  ArrowUpRight,
+  ArrowDownRight,
+} from "lucide-react";
 
 type Transaction = {
   id: string;
@@ -43,7 +49,10 @@ interface MonthData {
   incomeCount: number;
   expenseCount: number;
   transactions: Transaction[];
-  dateBreakdown: Record<string, { income: number; expense: number; count: number }>;
+  dateBreakdown: Record<
+    string,
+    { income: number; expense: number; count: number }
+  >;
 }
 
 export function DashboardCharts({
@@ -53,52 +62,70 @@ export function DashboardCharts({
   const [selectedMonth, setSelectedMonth] = useState<string | null>(null);
 
   // Group by YYYY-MM with detailed breakdown
-  const monthlyData = transactions.reduce((acc, t) => {
-    const date = new Date(t.date);
-    const yearMonth = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
-    const dayKey = date.toLocaleDateString("en-CA", { month: "short", day: "numeric" });
+  const monthlyData = transactions.reduce(
+    (acc, t) => {
+      const date = new Date(t.date);
+      const yearMonth = `${date.getFullYear()}-${String(
+        date.getMonth() + 1
+      ).padStart(2, "0")}`;
+      const dayKey = date.toLocaleDateString("en-CA", {
+        month: "short",
+        day: "numeric",
+      });
 
-    const amount = Number(t.amount);
-    const currency = t.currency || "CAD";
-    const convertedAmount = currency === "USD" ? amount * usdToCad : amount;
+      const amount = Number(t.amount);
+      const currency = t.currency || "CAD";
+      const convertedAmount = currency === "USD" ? amount * usdToCad : amount;
 
-    if (!acc[yearMonth]) {
-      acc[yearMonth] = {
-        income: 0,
-        expense: 0,
-        incomeCount: 0,
-        expenseCount: 0,
-        transactions: [],
-        dateBreakdown: {},
-      };
-    }
+      if (!acc[yearMonth]) {
+        acc[yearMonth] = {
+          income: 0,
+          expense: 0,
+          incomeCount: 0,
+          expenseCount: 0,
+          transactions: [],
+          dateBreakdown: {},
+        };
+      }
 
-    // Initialize date breakdown if needed
-    if (!acc[yearMonth].dateBreakdown[dayKey]) {
-      acc[yearMonth].dateBreakdown[dayKey] = { income: 0, expense: 0, count: 0 };
-    }
+      // Initialize date breakdown if needed
+      if (!acc[yearMonth].dateBreakdown[dayKey]) {
+        acc[yearMonth].dateBreakdown[dayKey] = {
+          income: 0,
+          expense: 0,
+          count: 0,
+        };
+      }
 
-    if (t.type === "income") {
-      acc[yearMonth].income += convertedAmount;
-      acc[yearMonth].incomeCount++;
-      acc[yearMonth].dateBreakdown[dayKey].income += convertedAmount;
-    } else {
-      acc[yearMonth].expense += convertedAmount;
-      acc[yearMonth].expenseCount++;
-      acc[yearMonth].dateBreakdown[dayKey].expense += convertedAmount;
-    }
-    acc[yearMonth].dateBreakdown[dayKey].count++;
-    acc[yearMonth].transactions.push({ ...t, amount: convertedAmount });
+      if (t.type === "income") {
+        acc[yearMonth].income += convertedAmount;
+        acc[yearMonth].incomeCount++;
+        acc[yearMonth].dateBreakdown[dayKey].income += convertedAmount;
+      } else {
+        acc[yearMonth].expense += convertedAmount;
+        acc[yearMonth].expenseCount++;
+        acc[yearMonth].dateBreakdown[dayKey].expense += convertedAmount;
+      }
+      acc[yearMonth].dateBreakdown[dayKey].count++;
+      acc[yearMonth].transactions.push({ ...t, amount: convertedAmount });
 
-    return acc;
-  }, {} as Record<string, {
-    income: number;
-    expense: number;
-    incomeCount: number;
-    expenseCount: number;
-    transactions: Transaction[];
-    dateBreakdown: Record<string, { income: number; expense: number; count: number }>;
-  }>);
+      return acc;
+    },
+    {} as Record<
+      string,
+      {
+        income: number;
+        expense: number;
+        incomeCount: number;
+        expenseCount: number;
+        transactions: Transaction[];
+        dateBreakdown: Record<
+          string,
+          { income: number; expense: number; count: number }
+        >;
+      }
+    >
+  );
 
   // Convert to array and sort chronologically
   const data: MonthData[] = Object.entries(monthlyData)
@@ -106,7 +133,10 @@ export function DashboardCharts({
     .map(([yearMonth, values]) => {
       const [year, month] = yearMonth.split("-");
       const date = new Date(parseInt(year), parseInt(month) - 1);
-      const label = date.toLocaleString("default", { month: "short", year: "2-digit" });
+      const label = date.toLocaleString("default", {
+        month: "short",
+        year: "2-digit",
+      });
 
       return {
         name: label,
@@ -123,8 +153,8 @@ export function DashboardCharts({
     })
     .slice(-12);
 
-  const selectedData = selectedMonth 
-    ? data.find(d => d.yearMonth === selectedMonth) 
+  const selectedData = selectedMonth
+    ? data.find((d) => d.yearMonth === selectedMonth)
     : null;
 
   if (data.length === 0) {
@@ -137,10 +167,18 @@ export function DashboardCharts({
   }
 
   // Custom tooltip component
-  const CustomTooltip = ({ active, payload, label }: { active?: boolean; payload?: Array<{ value: number; dataKey: string }>; label?: string }) => {
+  const CustomTooltip = ({
+    active,
+    payload,
+    label,
+  }: {
+    active?: boolean;
+    payload?: Array<{ value: number; dataKey: string }>;
+    label?: string;
+  }) => {
     if (!active || !payload || !payload.length) return null;
 
-    const monthData = data.find(d => d.name === label);
+    const monthData = data.find((d) => d.name === label);
     if (!monthData) return null;
 
     // Sort date breakdown by date
@@ -160,7 +198,7 @@ export function DashboardCharts({
             {monthData.transactionCount} transactions
           </span>
         </div>
-        
+
         {/* Summary */}
         <div className="grid grid-cols-2 gap-3 mb-3">
           <div className="bg-emerald-50 rounded-lg p-2">
@@ -169,7 +207,10 @@ export function DashboardCharts({
               Income ({monthData.incomeCount})
             </div>
             <div className="text-emerald-700 font-semibold">
-              ${monthData.income.toLocaleString("en-CA", { minimumFractionDigits: 2 })}
+              $
+              {monthData.income.toLocaleString("en-CA", {
+                minimumFractionDigits: 2,
+              })}
             </div>
           </div>
           <div className="bg-red-50 rounded-lg p-2">
@@ -178,17 +219,33 @@ export function DashboardCharts({
               Expenses ({monthData.expenseCount})
             </div>
             <div className="text-red-700 font-semibold">
-              ${monthData.expense.toLocaleString("en-CA", { minimumFractionDigits: 2 })}
+              $
+              {monthData.expense.toLocaleString("en-CA", {
+                minimumFractionDigits: 2,
+              })}
             </div>
           </div>
         </div>
 
         {/* Net */}
-        <div className={`rounded-lg p-2 mb-3 ${monthData.net >= 0 ? 'bg-emerald-100' : 'bg-red-100'}`}>
+        <div
+          className={`rounded-lg p-2 mb-3 ${
+            monthData.net >= 0 ? "bg-emerald-100" : "bg-red-100"
+          }`}
+        >
           <div className="flex items-center justify-between">
-            <span className="text-xs font-medium text-slate-600">Net Cash Flow</span>
-            <span className={`font-bold ${monthData.net >= 0 ? 'text-emerald-700' : 'text-red-700'}`}>
-              {monthData.net >= 0 ? '+' : ''}${monthData.net.toLocaleString("en-CA", { minimumFractionDigits: 2 })}
+            <span className="text-xs font-medium text-slate-600">
+              Net Cash Flow
+            </span>
+            <span
+              className={`font-bold ${
+                monthData.net >= 0 ? "text-emerald-700" : "text-red-700"
+              }`}
+            >
+              {monthData.net >= 0 ? "+" : ""}$
+              {monthData.net.toLocaleString("en-CA", {
+                minimumFractionDigits: 2,
+              })}
             </span>
           </div>
         </div>
@@ -196,17 +253,32 @@ export function DashboardCharts({
         {/* Date Breakdown */}
         {sortedDates.length > 0 && (
           <div>
-            <div className="text-xs font-medium text-slate-500 mb-2">By Date</div>
+            <div className="text-xs font-medium text-slate-500 mb-2">
+              By Date
+            </div>
             <div className="space-y-1.5 max-h-[150px] overflow-y-auto">
               {sortedDates.map(([dateKey, dateData]) => (
-                <div key={dateKey} className="flex items-center justify-between text-xs py-1 px-2 rounded bg-slate-50">
+                <div
+                  key={dateKey}
+                  className="flex items-center justify-between text-xs py-1 px-2 rounded bg-slate-50"
+                >
                   <span className="text-slate-600 font-medium">{dateKey}</span>
                   <div className="flex items-center gap-3">
                     {dateData.income > 0 && (
-                      <span className="text-emerald-600">+${dateData.income.toLocaleString("en-CA", { maximumFractionDigits: 0 })}</span>
+                      <span className="text-emerald-600">
+                        +$
+                        {dateData.income.toLocaleString("en-CA", {
+                          maximumFractionDigits: 0,
+                        })}
+                      </span>
                     )}
                     {dateData.expense > 0 && (
-                      <span className="text-red-600">-${dateData.expense.toLocaleString("en-CA", { maximumFractionDigits: 0 })}</span>
+                      <span className="text-red-600">
+                        -$
+                        {dateData.expense.toLocaleString("en-CA", {
+                          maximumFractionDigits: 0,
+                        })}
+                      </span>
                     )}
                     <span className="text-slate-400">({dateData.count})</span>
                   </div>
@@ -232,13 +304,17 @@ export function DashboardCharts({
       {/* Chart */}
       <div style={{ minHeight: 320, minWidth: 0 }}>
         <ResponsiveContainer width="100%" height={320}>
-          <BarChart 
-            data={data} 
+          <BarChart
+            data={data}
             onClick={(e) => {
-              const chartState = e as { activePayload?: Array<{ payload: MonthData }> };
+              const chartState = e as {
+                activePayload?: Array<{ payload: MonthData }>;
+              };
               if (chartState?.activePayload?.[0]?.payload) {
                 const clicked = chartState.activePayload[0].payload;
-                setSelectedMonth(selectedMonth === clicked.yearMonth ? null : clicked.yearMonth);
+                setSelectedMonth(
+                  selectedMonth === clicked.yearMonth ? null : clicked.yearMonth
+                );
               }
             }}
           >
@@ -255,13 +331,28 @@ export function DashboardCharts({
               tickLine={false}
               axisLine={false}
               tickFormatter={(value) =>
-                `$${Math.abs(value) >= 1000 ? `${(value / 1000).toFixed(0)}k` : value}`
+                `$${
+                  Math.abs(value) >= 1000
+                    ? `${(value / 1000).toFixed(0)}k`
+                    : value
+                }`
               }
             />
-            <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(0,0,0,0.04)' }} />
-            <Legend 
-              wrapperStyle={{ paddingTop: '10px' }}
-              formatter={(value) => <span className="text-xs text-slate-600">{value}</span>}
+            <Tooltip
+              content={({ active, payload, label }) => (
+                <CustomTooltip
+                  active={active}
+                  payload={payload as Array<{ value: number; dataKey: string }>}
+                  label={label as string | undefined}
+                />
+              )}
+              cursor={{ fill: "rgba(0,0,0,0.04)" }}
+            />
+            <Legend
+              wrapperStyle={{ paddingTop: "10px" }}
+              formatter={(value) => (
+                <span className="text-xs text-slate-600">{value}</span>
+              )}
             />
             <ReferenceLine y={0} stroke="#e2e8f0" />
             <Bar
@@ -272,10 +363,14 @@ export function DashboardCharts({
               cursor="pointer"
             >
               {data.map((entry) => (
-                <Cell 
-                  key={entry.yearMonth} 
-                  fill={selectedMonth === entry.yearMonth ? "#15803d" : "#22c55e"}
-                  opacity={selectedMonth && selectedMonth !== entry.yearMonth ? 0.5 : 1}
+                <Cell
+                  key={entry.yearMonth}
+                  fill={
+                    selectedMonth === entry.yearMonth ? "#15803d" : "#22c55e"
+                  }
+                  opacity={
+                    selectedMonth && selectedMonth !== entry.yearMonth ? 0.5 : 1
+                  }
                 />
               ))}
             </Bar>
@@ -287,10 +382,14 @@ export function DashboardCharts({
               cursor="pointer"
             >
               {data.map((entry) => (
-                <Cell 
-                  key={entry.yearMonth} 
-                  fill={selectedMonth === entry.yearMonth ? "#b91c1c" : "#ef4444"}
-                  opacity={selectedMonth && selectedMonth !== entry.yearMonth ? 0.5 : 1}
+                <Cell
+                  key={entry.yearMonth}
+                  fill={
+                    selectedMonth === entry.yearMonth ? "#b91c1c" : "#ef4444"
+                  }
+                  opacity={
+                    selectedMonth && selectedMonth !== entry.yearMonth ? 0.5 : 1
+                  }
                 />
               ))}
             </Bar>
@@ -300,41 +399,71 @@ export function DashboardCharts({
 
       {/* Month Summary Cards */}
       <div className="grid grid-cols-3 gap-3">
-        {data.slice(-3).reverse().map((month) => (
-          <button
-            key={month.yearMonth}
-            onClick={() => setSelectedMonth(selectedMonth === month.yearMonth ? null : month.yearMonth)}
-            className={`p-3 rounded-lg border text-left transition-all hover:shadow-md ${
-              selectedMonth === month.yearMonth 
-                ? 'border-slate-400 bg-slate-50 shadow-sm' 
-                : 'border-slate-200 hover:border-slate-300'
-            }`}
-          >
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-xs font-medium text-slate-500">{month.name}</span>
-              <span className="text-[10px] text-muted-foreground bg-muted px-1.5 py-0.5 rounded">
-                {month.transactionCount}
-              </span>
-            </div>
-            <div className={`text-lg font-bold flex items-center gap-1 ${
-              month.net >= 0 ? 'text-emerald-600' : 'text-red-600'
-            }`}>
-              {month.net >= 0 ? <TrendingUp className="h-4 w-4" /> : <TrendingDown className="h-4 w-4" />}
-              {month.net >= 0 ? '+' : ''}${Math.abs(month.net).toLocaleString("en-CA", { maximumFractionDigits: 0 })}
-            </div>
-            <div className="mt-1 flex items-center gap-2 text-[10px]">
-              <span className="text-emerald-600">↑${month.income.toLocaleString("en-CA", { maximumFractionDigits: 0 })}</span>
-              <span className="text-red-600">↓${month.expense.toLocaleString("en-CA", { maximumFractionDigits: 0 })}</span>
-            </div>
-          </button>
-        ))}
+        {data
+          .slice(-3)
+          .reverse()
+          .map((month) => (
+            <button
+              key={month.yearMonth}
+              onClick={() =>
+                setSelectedMonth(
+                  selectedMonth === month.yearMonth ? null : month.yearMonth
+                )
+              }
+              className={`p-3 rounded-lg border text-left transition-all hover:shadow-md ${
+                selectedMonth === month.yearMonth
+                  ? "border-slate-400 bg-slate-50 shadow-sm"
+                  : "border-slate-200 hover:border-slate-300"
+              }`}
+            >
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-xs font-medium text-slate-500">
+                  {month.name}
+                </span>
+                <span className="text-[10px] text-muted-foreground bg-muted px-1.5 py-0.5 rounded">
+                  {month.transactionCount}
+                </span>
+              </div>
+              <div
+                className={`text-lg font-bold flex items-center gap-1 ${
+                  month.net >= 0 ? "text-emerald-600" : "text-red-600"
+                }`}
+              >
+                {month.net >= 0 ? (
+                  <TrendingUp className="h-4 w-4" />
+                ) : (
+                  <TrendingDown className="h-4 w-4" />
+                )}
+                {month.net >= 0 ? "+" : ""}$
+                {Math.abs(month.net).toLocaleString("en-CA", {
+                  maximumFractionDigits: 0,
+                })}
+              </div>
+              <div className="mt-1 flex items-center gap-2 text-[10px]">
+                <span className="text-emerald-600">
+                  ↑$
+                  {month.income.toLocaleString("en-CA", {
+                    maximumFractionDigits: 0,
+                  })}
+                </span>
+                <span className="text-red-600">
+                  ↓$
+                  {month.expense.toLocaleString("en-CA", {
+                    maximumFractionDigits: 0,
+                  })}
+                </span>
+              </div>
+            </button>
+          ))}
       </div>
 
       {/* Expanded Month Detail */}
       {selectedData && (
         <div className="border rounded-xl p-4 bg-slate-50/50">
           <div className="flex items-center justify-between mb-4">
-            <h4 className="font-semibold text-slate-800">{selectedData.name} Breakdown</h4>
+            <h4 className="font-semibold text-slate-800">
+              {selectedData.name} Breakdown
+            </h4>
             <button
               onClick={() => setSelectedMonth(null)}
               className="text-xs text-muted-foreground hover:text-foreground"
@@ -342,7 +471,7 @@ export function DashboardCharts({
               Close ✕
             </button>
           </div>
-          
+
           {/* Date-by-date breakdown */}
           <div className="space-y-2 max-h-[200px] overflow-y-auto">
             {Object.entries(selectedData.dateBreakdown)
@@ -354,31 +483,46 @@ export function DashboardCharts({
               .map(([dateKey, dateData]) => {
                 const dayNet = dateData.income - dateData.expense;
                 return (
-                  <div 
-                    key={dateKey} 
+                  <div
+                    key={dateKey}
                     className="flex items-center justify-between py-2 px-3 rounded-lg bg-white border border-slate-100"
                   >
                     <div className="flex items-center gap-3">
-                      <div className="text-sm font-medium text-slate-700 w-20">{dateKey}</div>
+                      <div className="text-sm font-medium text-slate-700 w-20">
+                        {dateKey}
+                      </div>
                       <span className="text-xs text-muted-foreground">
-                        {dateData.count} txn{dateData.count !== 1 ? 's' : ''}
+                        {dateData.count} txn{dateData.count !== 1 ? "s" : ""}
                       </span>
                     </div>
                     <div className="flex items-center gap-4">
                       {dateData.income > 0 && (
                         <span className="text-sm text-emerald-600 font-medium">
-                          +${dateData.income.toLocaleString("en-CA", { minimumFractionDigits: 2 })}
+                          +$
+                          {dateData.income.toLocaleString("en-CA", {
+                            minimumFractionDigits: 2,
+                          })}
                         </span>
                       )}
                       {dateData.expense > 0 && (
                         <span className="text-sm text-red-600 font-medium">
-                          -${dateData.expense.toLocaleString("en-CA", { minimumFractionDigits: 2 })}
+                          -$
+                          {dateData.expense.toLocaleString("en-CA", {
+                            minimumFractionDigits: 2,
+                          })}
                         </span>
                       )}
-                      <div className={`text-xs font-semibold px-2 py-0.5 rounded ${
-                        dayNet >= 0 ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'
-                      }`}>
-                        {dayNet >= 0 ? '+' : ''}{dayNet.toLocaleString("en-CA", { maximumFractionDigits: 0 })}
+                      <div
+                        className={`text-xs font-semibold px-2 py-0.5 rounded ${
+                          dayNet >= 0
+                            ? "bg-emerald-100 text-emerald-700"
+                            : "bg-red-100 text-red-700"
+                        }`}
+                      >
+                        {dayNet >= 0 ? "+" : ""}
+                        {dayNet.toLocaleString("en-CA", {
+                          maximumFractionDigits: 0,
+                        })}
                       </div>
                     </div>
                   </div>

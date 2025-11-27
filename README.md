@@ -4,9 +4,9 @@ A private, customizable finance tracker built for Canadians who want full contro
 
 ## Why This Exists
 
-I built this because most personal finance tools out there (Yahoo Finance, Mint, etc.) weren't exactly what I wanted. They either lacked features I needed, had too many features I didn't want, or didn't let me customize things the way I preferred.
+I built this because most personal finance tools out there (Yahoo Finance, Mint, etc.) weren't exactly what I wanted. I wanted a budgeting app that has an account of my entire net wealth. They either lacked features I needed, had too many features I didn't want, or didn't let me customize things the way I preferred.
 
-So I decided to create an open-source project that anyone — including myself — can use to build their own private, custom personal finance hub. You own your data, you control what you track, and you can customize it however you want.
+So I decided to create an open-source project that anyone can use to build their own private, custom personal finance hub. You own your data, you control what you track, and you can customize it however you want.
 
 ## Features
 
@@ -108,7 +108,7 @@ So I decided to create an open-source project that anyone — including myself �
 
 ## Tech Stack
 
-- **Next.js 15** — App Router, Server Components, Server Actions
+- **Next.js 16** — App Router, Server Components, Server Actions
 - **React 19** — Latest React with concurrent features
 - **TypeScript** — Strict type-safe code
 - **Supabase** — Database, authentication, and Row Level Security
@@ -573,5 +573,3 @@ This is an open-source project. Feel free to:
 MIT License — See LICENSE file for details.
 
 ---
-
-Built with ❤️ for Canadians who want control over their finances.
