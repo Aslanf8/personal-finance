@@ -7,6 +7,7 @@ import {
 } from "@/components/sidebar";
 import { OnboardingDialog } from "@/components/onboarding-dialog";
 import { MobileScanFAB } from "@/components/mobile-scan-fab";
+import { VoiceAgentFAB } from "@/components/voice-agent";
 import { User } from "@supabase/supabase-js";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
@@ -67,6 +68,9 @@ export function DashboardShell({
 
       {/* Mobile Scan FAB */}
       <MobileScanFAB />
+
+      {/* Voice Agent FAB */}
+      <VoiceAgentFAB />
     </SidebarProvider>
   );
 }
