@@ -87,6 +87,7 @@ export interface Transaction {
   recurring_frequency: string | null;
   notes: string | null;
   currency: 'CAD' | 'USD';
+  linked_asset_id: string | null;
 }
 
 // Scan Receipt Types
@@ -215,4 +216,202 @@ export const GOAL_TYPES: Record<GoalType, { label: string; description: string; 
     icon: '🎯',
   },
 };
+
+// Asset Types (Real Estate, Vehicles, Liabilities, etc.)
+export type AssetCategory = 
+  | 'real_estate' 
+  | 'vehicle' 
+  | 'retirement' 
+  | 'cash_equivalent' 
+  | 'collectible' 
+  | 'business' 
+  | 'other' 
+  | 'liability';
+
+export type PropertyType = 
+  | 'house' 
+  | 'condo' 
+  | 'townhouse' 
+  | 'land' 
+  | 'cottage' 
+  | 'commercial' 
+  | 'rental';
+
+export type VehicleType = 
+  | 'car' 
+  | 'truck' 
+  | 'suv' 
+  | 'motorcycle' 
+  | 'boat' 
+  | 'rv' 
+  | 'snowmobile' 
+  | 'atv' 
+  | 'other';
+
+export type LiabilityType = 
+  | 'mortgage' 
+  | 'heloc' 
+  | 'car_loan' 
+  | 'student_loan' 
+  | 'credit_card' 
+  | 'personal_loan' 
+  | 'line_of_credit' 
+  | 'other';
+
+export interface Asset {
+  id: string;
+  user_id: string;
+  created_at: string;
+  updated_at: string;
+  name: string;
+  category: AssetCategory;
+  subcategory: string | null;
+  current_value: number;
+  purchase_price: number | null;
+  purchase_date: string | null;
+  currency: 'CAD' | 'USD';
+  is_liability: boolean;
+  interest_rate: number | null;
+  address: string | null;
+  property_type: string | null;
+  make: string | null;
+  model: string | null;
+  year: number | null;
+  description: string | null;
+  notes: string | null;
+  linked_asset_id: string | null;
+  institution: string | null;
+  // Payment tracking for liabilities
+  monthly_payment: number | null;
+  payment_day: number | null;
+  linked_transaction_id: string | null;
+}
+
+export interface AssetInput {
+  name: string;
+  category: AssetCategory;
+  subcategory?: string;
+  current_value: number;
+  purchase_price?: number;
+  purchase_date?: string;
+  currency?: 'CAD' | 'USD';
+  is_liability?: boolean;
+  interest_rate?: number;
+  address?: string;
+  property_type?: string;
+  make?: string;
+  model?: string;
+  year?: number;
+  description?: string;
+  notes?: string;
+  linked_asset_id?: string;
+  institution?: string;
+  // Payment tracking for liabilities
+  monthly_payment?: number;
+  payment_day?: number;
+  create_recurring_transaction?: boolean;
+}
+
+// Asset Category UI Configuration
+export const ASSET_CATEGORIES: Record<AssetCategory, { label: string; icon: string; color: string }> = {
+  real_estate: { label: 'Real Estate', icon: '🏠', color: 'emerald' },
+  vehicle: { label: 'Vehicles', icon: '🚗', color: 'blue' },
+  retirement: { label: 'Retirement', icon: '🏦', color: 'purple' },
+  cash_equivalent: { label: 'Cash & Savings', icon: '💵', color: 'green' },
+  collectible: { label: 'Collectibles', icon: '🎨', color: 'amber' },
+  business: { label: 'Business', icon: '💼', color: 'slate' },
+  other: { label: 'Other Assets', icon: '📦', color: 'gray' },
+  liability: { label: 'Liabilities', icon: '💳', color: 'red' },
+};
+
+export const PROPERTY_TYPES: Record<PropertyType, string> = {
+  house: 'House',
+  condo: 'Condo/Apartment',
+  townhouse: 'Townhouse',
+  land: 'Land',
+  cottage: 'Cottage/Cabin',
+  commercial: 'Commercial',
+  rental: 'Rental Property',
+};
+
+export const VEHICLE_TYPES: Record<VehicleType, string> = {
+  car: 'Car',
+  truck: 'Truck',
+  suv: 'SUV',
+  motorcycle: 'Motorcycle',
+  boat: 'Boat',
+  rv: 'RV/Camper',
+  snowmobile: 'Snowmobile',
+  atv: 'ATV',
+  other: 'Other',
+};
+
+export const LIABILITY_TYPES: Record<LiabilityType, string> = {
+  mortgage: 'Mortgage',
+  heloc: 'HELOC',
+  car_loan: 'Car Loan',
+  student_loan: 'Student Loan',
+  credit_card: 'Credit Card',
+  personal_loan: 'Personal Loan',
+  line_of_credit: 'Line of Credit',
+  other: 'Other',
+};
+
+export const CANADIAN_INSTITUTIONS = [
+  'TD Bank',
+  'RBC Royal Bank',
+  'Scotiabank',
+  'BMO',
+  'CIBC',
+  'National Bank',
+  'Desjardins',
+  'Tangerine',
+  'Simplii',
+  'EQ Bank',
+  'Wealthsimple',
+  'Questrade',
+  'Other',
+] as const;
+
+export const INVESTMENT_ACCOUNT_LABELS = [
+  'TFSA',
+  'RRSP',
+  'FHSA',
+  'RESP',
+  'RDSP',
+  'LIRA',
+  'Pension',
+  'Non-Registered',
+  'Margin',
+  'Cash',
+  'Crypto',
+] as const;
+
+// Maps liability types to expense categories for auto-created transactions
+export const LIABILITY_TO_EXPENSE_CATEGORY: Record<string, string> = {
+  mortgage: 'Housing',
+  heloc: 'Housing',
+  car_loan: 'Transportation',
+  student_loan: 'Education',
+  credit_card: 'Debt Payment',
+  personal_loan: 'Debt Payment',
+  line_of_credit: 'Debt Payment',
+  other: 'Other',
+};
+
+// Common expense categories (for reference)
+export const EXPENSE_CATEGORIES = [
+  'Housing',
+  'Transportation',
+  'Food',
+  'Utilities',
+  'Healthcare',
+  'Insurance',
+  'Education',
+  'Entertainment',
+  'Personal',
+  'Debt Payment',
+  'Savings',
+  'Other',
+] as const;
 

@@ -42,20 +42,17 @@ interface UseVoiceAgentReturn {
 }
 
 function buildContextMessage(overview: FinancialOverview): string {
-  const name = overview.userName ? `The user's name is ${overview.userName}. ` : '';
+  const name = overview.userName ? `User's name: ${overview.userName}. ` : '';
   const goal = overview.goal 
-    ? `They have a goal "${overview.goal.name}" and are ${overview.goal.progress}% there. ` 
+    ? `Goal: "${overview.goal.name}" - ${overview.goal.progress}% complete. ` 
     : '';
   const topSpend = overview.thisMonth.topCategory 
-    ? `Top spending category this month: ${overview.thisMonth.topCategory.name} ($${overview.thisMonth.topCategory.amount}). ` 
+    ? `Top spend: ${overview.thisMonth.topCategory.name} ($${overview.thisMonth.topCategory.amount}). ` 
     : '';
 
-  return `[QUICK CONTEXT - You have this info instantly, no need to fetch it unless user asks for details]
-${name}Net worth: ~$${overview.netWorth.toLocaleString()} CAD (Cash: $${overview.cashBalance.toLocaleString()}, Investments: $${overview.investmentValue.toLocaleString()}).
-Investments are ${overview.investmentGainPercent >= 0 ? 'up' : 'down'} ${Math.abs(overview.investmentGainPercent)}% overall across ${overview.holdingsCount} holdings.
-This month: $${overview.thisMonth.income.toLocaleString()} income, $${overview.thisMonth.expenses.toLocaleString()} expenses, saving ${overview.thisMonth.savingsRate}%. ${topSpend}${goal}
----
-You just connected to a voice call. Greet them naturally (use their name if you have it!) like "Hey ${overview.userName || 'there'}! I'm here." Then briefly mention one interesting thing from their finances and ask how you can help. Keep it short and warm. If they ask follow-up questions, use your tools to get detailed information.`;
+  return `[CONTEXT - use this data when user asks, don't mention it upfront] ${name}Net worth: ~$${overview.netWorth.toLocaleString()} (Cash: $${overview.cashBalance.toLocaleString()}, Investments: $${overview.investmentValue.toLocaleString()}). Investments ${overview.investmentGainPercent >= 0 ? 'up' : 'down'} ${Math.abs(overview.investmentGainPercent)}% across ${overview.holdingsCount} holdings. This month: $${overview.thisMonth.income.toLocaleString()} income, $${overview.thisMonth.expenses.toLocaleString()} expenses (${overview.thisMonth.savingsRate}% savings rate). ${topSpend}${goal}
+
+Just say hi${overview.userName ? ` ${overview.userName}` : ''} and ask what they need help with. Don't mention any numbers or facts yet.`;
 }
 
 export function useVoiceAgent(): UseVoiceAgentReturn {
@@ -155,11 +152,11 @@ export function useVoiceAgent(): UseVoiceAgentReturn {
       sessionRef.current = session;
       setStatus('listening');
 
-      // Step 5: Greet with context
+      // Step 5: Send context and prompt response
       if (overview) {
         session.sendMessage(buildContextMessage(overview));
       } else {
-        session.sendMessage('You just connected to a voice call. Greet them naturally - "Hey! I\'m here, can you hear me?" Then ask how you can help with their finances today. Keep it short.');
+        session.sendMessage('Say hi and ask how you can help with their finances. Keep it brief.');
       }
 
     } catch (err) {

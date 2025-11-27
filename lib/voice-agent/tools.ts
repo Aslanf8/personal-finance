@@ -3,7 +3,7 @@ import { z } from 'zod';
 
 export const getFinancialSummary = tool({
   name: 'get_financial_summary',
-  description: 'Get the user\'s complete financial overview including net worth, cash balance, investment value, and unrealized gains/losses. Use this when the user asks about their overall financial situation, net worth, or general financial health.',
+  description: 'Get the user\'s complete financial overview including net worth, cash balance, investment value, physical assets, liabilities, and unrealized gains/losses. Use this when the user asks about their overall financial situation, net worth, or general financial health.',
   parameters: z.object({}),
   execute: async () => {
     const res = await fetch('/api/voice-agent/financial-summary');
@@ -52,7 +52,7 @@ export const getSpendingBreakdown = tool({
 
 export const getInvestmentPortfolio = tool({
   name: 'get_investment_portfolio',
-  description: 'Get detailed information about the user\'s investment portfolio including all holdings, gains/losses, and top performers. Use this when the user asks about their investments, stocks, crypto, or portfolio performance.',
+  description: 'Get detailed information about the user\'s securities portfolio (stocks, ETFs, crypto) including all holdings, gains/losses, and top performers. Use this when the user asks about their investments, stocks, crypto, or portfolio performance.',
   parameters: z.object({}),
   execute: async () => {
     const res = await fetch('/api/voice-agent/investments');
@@ -103,7 +103,7 @@ export const getIncomeBreakdown = tool({
 
 export const getInvestmentAccounts = tool({
   name: 'get_investment_accounts',
-  description: 'Get investments grouped by account type (TFSA, RRSP, FHSA, Margin). Shows value and holdings in each account. Use when user asks about their registered accounts or wants to see investments by account.',
+  description: 'Get investments grouped by account type (TFSA, RRSP, FHSA, RESP, RDSP, LIRA, Pension, Margin). Shows value and holdings in each account. Use when user asks about their registered accounts or wants to see investments by account.',
   parameters: z.object({}),
   execute: async () => {
     const res = await fetch('/api/voice-agent/accounts');
@@ -134,6 +134,39 @@ export const getUserProfile = tool({
   },
 });
 
+export const getPhysicalAssets = tool({
+  name: 'get_physical_assets',
+  description: 'Get all physical assets including real estate (houses, condos, land), vehicles (cars, trucks, boats), retirement accounts, collectibles, and business equity. Shows current values, purchase prices, and appreciation. Use when user asks about their property, house, car, real estate value, or physical assets.',
+  parameters: z.object({}),
+  execute: async () => {
+    const res = await fetch('/api/voice-agent/assets');
+    if (!res.ok) throw new Error('Failed to fetch assets');
+    return res.json();
+  },
+});
+
+export const getLiabilities = tool({
+  name: 'get_liabilities',
+  description: 'Get all liabilities including mortgages, HELOC, car loans, student loans, credit cards, and lines of credit. Shows amount owed, interest rates, monthly payments, and estimated payoff time. Use when user asks about their debt, mortgage, loans, what they owe, or monthly debt payments.',
+  parameters: z.object({}),
+  execute: async () => {
+    const res = await fetch('/api/voice-agent/liabilities');
+    if (!res.ok) throw new Error('Failed to fetch liabilities');
+    return res.json();
+  },
+});
+
+export const getNetWorthBreakdown = tool({
+  name: 'get_net_worth_breakdown',
+  description: 'Get a complete net worth breakdown showing all asset categories (cash, securities, real estate, vehicles, retirement, collectibles, business) and liabilities. Shows asset allocation percentages and detailed breakdown. Use when user wants to understand their full net worth composition or asset allocation.',
+  parameters: z.object({}),
+  execute: async () => {
+    const res = await fetch('/api/voice-agent/net-worth');
+    if (!res.ok) throw new Error('Failed to fetch net worth breakdown');
+    return res.json();
+  },
+});
+
 export const voiceAgentTools = [
   getFinancialSummary,
   getRecentTransactions,
@@ -145,4 +178,7 @@ export const voiceAgentTools = [
   getInvestmentAccounts,
   getMonthlyComparison,
   getUserProfile,
+  getPhysicalAssets,
+  getLiabilities,
+  getNetWorthBreakdown,
 ];

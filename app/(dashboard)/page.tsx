@@ -34,6 +34,7 @@ export default async function DashboardPage({ searchParams }: PageProps) {
     { data: allTransactions },
     { data: investments },
     { data: prices },
+    { data: assets },
     profileResult,
     primaryGoalResult,
     usdCadQuote,
@@ -44,6 +45,7 @@ export default async function DashboardPage({ searchParams }: PageProps) {
       .order("date", { ascending: true }),
     supabase.from("investments").select("*"),
     supabase.from("market_prices").select("*"),
+    supabase.from("assets").select("*"),
     supabase
       .from("profiles")
       .select("*")
@@ -168,9 +170,47 @@ export default async function DashboardPage({ searchParams }: PageProps) {
   const investValueCAD = investValueUSD * usdToCad;
   const investCostCAD = investCostUSD * usdToCad;
 
+  // Calculate assets and liabilities (all stored in CAD)
+  const realEstateTotal = (assets || [])
+    .filter((a) => a.category === "real_estate" && !a.is_liability)
+    .reduce((sum, a) => sum + Number(a.current_value), 0);
+
+  const vehicleTotal = (assets || [])
+    .filter((a) => a.category === "vehicle" && !a.is_liability)
+    .reduce((sum, a) => sum + Number(a.current_value), 0);
+
+  const otherAssetsTotal = (assets || [])
+    .filter(
+      (a) =>
+        [
+          "retirement",
+          "cash_equivalent",
+          "collectible",
+          "business",
+          "other",
+        ].includes(a.category) && !a.is_liability
+    )
+    .reduce((sum, a) => sum + Number(a.current_value), 0);
+
+  const liabilitiesTotal = (assets || [])
+    .filter((a) => a.is_liability || a.category === "liability")
+    .reduce((sum, a) => sum + Number(a.current_value), 0);
+
+  // Calculate monthly debt payments
+  const monthlyDebtPayments = (assets || [])
+    .filter(
+      (a) => (a.is_liability || a.category === "liability") && a.monthly_payment
+    )
+    .reduce((sum, a) => sum + Number(a.monthly_payment), 0);
+
+  const totalPhysicalAssets = realEstateTotal + vehicleTotal + otherAssetsTotal;
+
   // Cash balance is always all-time (actual money available)
   const cashBalance = allTimeIncome - allTimeExpenses;
-  const netWorth = cashBalance + investValueCAD;
+
+  // Net Worth = Cash + Investments + Physical Assets - Liabilities
+  const netWorth =
+    cashBalance + investValueCAD + totalPhysicalAssets - liabilitiesTotal;
   const unrealizedPL_CAD = investValueCAD - investCostCAD;
 
   // Period savings
@@ -263,20 +303,25 @@ export default async function DashboardPage({ searchParams }: PageProps) {
       />
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Card>
+        <Card className="bg-gradient-to-br from-emerald-50 to-teal-50 border-emerald-200">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Net Worth 🇨🇦</CardTitle>
+            <CardTitle className="text-sm font-medium text-emerald-700">
+              Net Worth 🇨🇦
+            </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
+            <div className="text-2xl font-bold text-emerald-900">
               $
               {netWorth.toLocaleString("en-CA", {
                 minimumFractionDigits: 2,
                 maximumFractionDigits: 2,
               })}
             </div>
-            <p className="text-xs text-muted-foreground">
-              Cash + Investments (1 USD = {usdToCad.toFixed(2)} CAD)
+            <p className="text-xs text-emerald-600">
+              All Assets - Liabilities
+              {liabilitiesTotal > 0
+                ? ` (-$${(liabilitiesTotal / 1000).toFixed(0)}k)`
+                : ""}
             </p>
           </CardContent>
         </Card>
@@ -358,8 +403,8 @@ export default async function DashboardPage({ searchParams }: PageProps) {
         </Card>
       </div>
 
-      {/* Period Income/Expense Summary */}
-      <div className="grid gap-4 md:grid-cols-2">
+      {/* Period Income/Expense/Debt Summary */}
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
@@ -392,6 +437,48 @@ export default async function DashboardPage({ searchParams }: PageProps) {
             </div>
           </CardContent>
         </Card>
+        {monthlyDebtPayments > 0 && (
+          <Card className="border-amber-200 bg-amber-50/50">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium text-amber-700">
+                Monthly Debt Payments 🇨🇦
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-amber-600">
+                $
+                {monthlyDebtPayments.toLocaleString("en-CA", {
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2,
+                })}
+              </div>
+              <p className="text-xs text-amber-600">
+                Included in expenses (recurring)
+              </p>
+            </CardContent>
+          </Card>
+        )}
+        {totalPhysicalAssets > 0 && (
+          <Card className="border-blue-200 bg-blue-50/50">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium text-blue-700">
+                Physical Assets 🇨🇦
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-blue-600">
+                $
+                {totalPhysicalAssets.toLocaleString("en-CA", {
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2,
+                })}
+              </div>
+              <p className="text-xs text-blue-600">
+                Real Estate, Vehicles, Other
+              </p>
+            </CardContent>
+          </Card>
+        )}
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
@@ -423,9 +510,101 @@ export default async function DashboardPage({ searchParams }: PageProps) {
             priceMap={priceMap}
             usdToCad={usdToCad}
             cashBalance={cashBalance}
+            assets={assets || []}
           />
         </CardContent>
       </Card>
+
+      {/* Liabilities Summary */}
+      {liabilitiesTotal > 0 && (
+        <Card className="border-red-200">
+          <CardHeader>
+            <CardTitle className="text-red-700">
+              Liabilities Overview 🇨🇦
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid gap-4 md:grid-cols-3">
+              <div className="bg-red-50 rounded-lg p-4">
+                <div className="text-sm text-red-600 mb-1">Total Owed</div>
+                <div className="text-2xl font-bold text-red-700">
+                  -$
+                  {liabilitiesTotal.toLocaleString("en-CA", {
+                    minimumFractionDigits: 0,
+                  })}
+                </div>
+              </div>
+              {monthlyDebtPayments > 0 && (
+                <div className="bg-amber-50 rounded-lg p-4">
+                  <div className="text-sm text-amber-600 mb-1">
+                    Monthly Payments
+                  </div>
+                  <div className="text-2xl font-bold text-amber-700">
+                    $
+                    {monthlyDebtPayments.toLocaleString("en-CA", {
+                      minimumFractionDigits: 0,
+                    })}
+                    /mo
+                  </div>
+                </div>
+              )}
+              {monthlyDebtPayments > 0 && liabilitiesTotal > 0 && (
+                <div className="bg-slate-50 rounded-lg p-4">
+                  <div className="text-sm text-slate-600 mb-1">
+                    Est. Payoff Time
+                  </div>
+                  <div className="text-2xl font-bold text-slate-700">
+                    {Math.ceil(liabilitiesTotal / monthlyDebtPayments)} months
+                  </div>
+                  <div className="text-xs text-slate-500">
+                    (~{(liabilitiesTotal / monthlyDebtPayments / 12).toFixed(1)}{" "}
+                    years)
+                  </div>
+                </div>
+              )}
+            </div>
+            {/* Liability breakdown */}
+            <div className="mt-4 space-y-2">
+              {(assets || [])
+                .filter((a) => a.is_liability || a.category === "liability")
+                .map((liability) => (
+                  <div
+                    key={liability.id}
+                    className="flex items-center justify-between py-2 border-b last:border-0"
+                  >
+                    <div>
+                      <div className="font-medium">{liability.name}</div>
+                      <div className="text-xs text-muted-foreground">
+                        {liability.subcategory && `${liability.subcategory} • `}
+                        {liability.interest_rate &&
+                          `${liability.interest_rate}% APR`}
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <div className="font-bold text-red-600">
+                        -$
+                        {Number(liability.current_value).toLocaleString(
+                          "en-CA",
+                          { minimumFractionDigits: 0 }
+                        )}
+                      </div>
+                      {liability.monthly_payment && (
+                        <div className="text-xs text-amber-600">
+                          $
+                          {Number(liability.monthly_payment).toLocaleString(
+                            "en-CA",
+                            { minimumFractionDigits: 0 }
+                          )}
+                          /mo
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }
