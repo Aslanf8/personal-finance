@@ -13,6 +13,24 @@ export type VoiceAgentStatus =
   | 'speaking' 
   | 'error';
 
+interface FinancialOverview {
+  userName: string | null;
+  netWorth: number;
+  cashBalance: number;
+  investmentValue: number;
+  investmentGainPercent: number;
+  holdingsCount: number;
+  thisMonth: {
+    income: number;
+    expenses: number;
+    savings: number;
+    savingsRate: number;
+    topCategory: { name: string; amount: number } | null;
+  };
+  goal: { name: string; progress: number; remaining: number } | null;
+  currency: string;
+}
+
 interface UseVoiceAgentReturn {
   status: VoiceAgentStatus;
   error: string | null;
@@ -21,6 +39,23 @@ interface UseVoiceAgentReturn {
   connect: () => Promise<void>;
   disconnect: () => void;
   toggleMute: () => void;
+}
+
+function buildContextMessage(overview: FinancialOverview): string {
+  const name = overview.userName ? `The user's name is ${overview.userName}. ` : '';
+  const goal = overview.goal 
+    ? `They have a goal "${overview.goal.name}" and are ${overview.goal.progress}% there. ` 
+    : '';
+  const topSpend = overview.thisMonth.topCategory 
+    ? `Top spending category this month: ${overview.thisMonth.topCategory.name} ($${overview.thisMonth.topCategory.amount}). ` 
+    : '';
+
+  return `[QUICK CONTEXT - You have this info instantly, no need to fetch it unless user asks for details]
+${name}Net worth: ~$${overview.netWorth.toLocaleString()} CAD (Cash: $${overview.cashBalance.toLocaleString()}, Investments: $${overview.investmentValue.toLocaleString()}).
+Investments are ${overview.investmentGainPercent >= 0 ? 'up' : 'down'} ${Math.abs(overview.investmentGainPercent)}% overall across ${overview.holdingsCount} holdings.
+This month: $${overview.thisMonth.income.toLocaleString()} income, $${overview.thisMonth.expenses.toLocaleString()} expenses, saving ${overview.thisMonth.savingsRate}%. ${topSpend}${goal}
+---
+You just connected to a voice call. Greet them naturally (use their name if you have it!) like "Hey ${overview.userName || 'there'}! I'm here." Then briefly mention one interesting thing from their finances and ask how you can help. Keep it short and warm. If they ask follow-up questions, use your tools to get detailed information.`;
 }
 
 export function useVoiceAgent(): UseVoiceAgentReturn {
@@ -39,7 +74,6 @@ export function useVoiceAgent(): UseVoiceAgentReturn {
       
       try {
         const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        // Stop the stream immediately - we just needed permission
         stream.getTracks().forEach(track => track.stop());
       } catch (permError) {
         console.error('Microphone permission denied:', permError);
@@ -48,12 +82,13 @@ export function useVoiceAgent(): UseVoiceAgentReturn {
         return;
       }
 
-      // Step 2: Get ephemeral token from server
+      // Step 2: Get token AND overview in parallel for speed
       setStatus('connecting');
 
-      const tokenResponse = await fetch('/api/realtime-session', {
-        method: 'POST',
-      });
+      const [tokenResponse, overviewResponse] = await Promise.all([
+        fetch('/api/realtime-session', { method: 'POST' }),
+        fetch('/api/voice-agent/overview'),
+      ]);
 
       if (!tokenResponse.ok) {
         const errorData = await tokenResponse.json();
@@ -61,9 +96,14 @@ export function useVoiceAgent(): UseVoiceAgentReturn {
       }
 
       const { token } = await tokenResponse.json();
-
       if (!token) {
         throw new Error('Invalid session token received');
+      }
+
+      // Get overview (don't fail if this errors, just proceed without it)
+      let overview: FinancialOverview | null = null;
+      if (overviewResponse.ok) {
+        overview = await overviewResponse.json();
       }
 
       // Step 3: Create agent and session
@@ -75,7 +115,7 @@ export function useVoiceAgent(): UseVoiceAgentReturn {
           audio: {
             output: {
               voice: 'ash',
-              speed: 1.15, // Slightly faster speech
+              speed: 1.15,
             },
           },
         },
@@ -102,7 +142,6 @@ export function useVoiceAgent(): UseVoiceAgentReturn {
       });
 
       session.on('history_updated', () => {
-        // Session is active and receiving data
         if (status === 'connecting' || status === 'connected') {
           setStatus('listening');
         }
@@ -116,8 +155,12 @@ export function useVoiceAgent(): UseVoiceAgentReturn {
       sessionRef.current = session;
       setStatus('listening');
 
-      // Step 5: Greet the user - agent initiates the conversation
-      session.sendMessage('You just connected to a voice call with the user. Greet them briefly like you just joined a call - something like "Hey! Can you hear me?" or "Hi there, I\'m here!" Keep it short and natural, then ask how you can help with their finances today.');
+      // Step 5: Greet with context
+      if (overview) {
+        session.sendMessage(buildContextMessage(overview));
+      } else {
+        session.sendMessage('You just connected to a voice call. Greet them naturally - "Hey! I\'m here, can you hear me?" Then ask how you can help with their finances today. Keep it short.');
+      }
 
     } catch (err) {
       console.error('Voice agent connection error:', err);
@@ -144,7 +187,6 @@ export function useVoiceAgent(): UseVoiceAgentReturn {
     }
   }, [isMuted]);
 
-  // Cleanup on unmount
   useEffect(() => {
     return () => {
       if (sessionRef.current) {

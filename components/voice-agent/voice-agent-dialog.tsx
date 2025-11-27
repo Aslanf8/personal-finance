@@ -226,9 +226,10 @@ export function VoiceAgentDialog({ open, onClose }: VoiceAgentDialogProps) {
         <div className="bg-zinc-900 rounded-3xl border border-zinc-800 shadow-2xl overflow-hidden">
           {/* Header */}
           <div className="flex items-center justify-between px-6 py-4 border-b border-zinc-800">
-            <h2 className="text-lg font-semibold text-white">
-              Finance Assistant
-            </h2>
+            <div>
+              <h2 className="text-lg font-semibold text-white">Dan</h2>
+              <p className="text-xs text-zinc-500">Your Finance Assistant</p>
+            </div>
             <div className="flex items-center gap-2">
               {isConnected && (
                 <button

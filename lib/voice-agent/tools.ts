@@ -72,11 +72,77 @@ export const getFinancialGoals = tool({
   },
 });
 
+export const getRecurringTransactions = tool({
+  name: 'get_recurring_transactions',
+  description: 'Get all recurring transactions like subscriptions, rent, salary, and regular bills. Useful for understanding fixed costs and regular income. Use when user asks about subscriptions, bills, or recurring expenses.',
+  parameters: z.object({}),
+  execute: async () => {
+    const res = await fetch('/api/voice-agent/recurring');
+    if (!res.ok) throw new Error('Failed to fetch recurring transactions');
+    return res.json();
+  },
+});
+
+export const getIncomeBreakdown = tool({
+  name: 'get_income_breakdown',
+  description: 'Get a breakdown of income sources by category (Salary, Bonus, Investment, etc.). Use when user asks about their income, earnings, or where money comes from.',
+  parameters: z.object({
+    period: z.enum(['this-month', 'last-month', 'this-year', 'all-time'])
+      .optional()
+      .describe('Time period (default: this-month)'),
+  }),
+  execute: async (params) => {
+    const searchParams = new URLSearchParams();
+    if (params.period) searchParams.set('period', params.period);
+    
+    const res = await fetch(`/api/voice-agent/income?${searchParams}`);
+    if (!res.ok) throw new Error('Failed to fetch income breakdown');
+    return res.json();
+  },
+});
+
+export const getInvestmentAccounts = tool({
+  name: 'get_investment_accounts',
+  description: 'Get investments grouped by account type (TFSA, RRSP, FHSA, Margin). Shows value and holdings in each account. Use when user asks about their registered accounts or wants to see investments by account.',
+  parameters: z.object({}),
+  execute: async () => {
+    const res = await fetch('/api/voice-agent/accounts');
+    if (!res.ok) throw new Error('Failed to fetch investment accounts');
+    return res.json();
+  },
+});
+
+export const getMonthlyComparison = tool({
+  name: 'get_monthly_comparison',
+  description: 'Compare financial metrics between this month and last month. Shows changes in spending, income, and savings. Use when user asks about trends, changes, or how they\'re doing compared to before.',
+  parameters: z.object({}),
+  execute: async () => {
+    const res = await fetch('/api/voice-agent/compare');
+    if (!res.ok) throw new Error('Failed to fetch monthly comparison');
+    return res.json();
+  },
+});
+
+export const getUserProfile = tool({
+  name: 'get_user_profile',
+  description: 'Get the user\'s profile information including their name and preferences. Use this to personalize the conversation by using their name.',
+  parameters: z.object({}),
+  execute: async () => {
+    const res = await fetch('/api/voice-agent/profile');
+    if (!res.ok) throw new Error('Failed to fetch profile');
+    return res.json();
+  },
+});
+
 export const voiceAgentTools = [
   getFinancialSummary,
   getRecentTransactions,
   getSpendingBreakdown,
   getInvestmentPortfolio,
   getFinancialGoals,
+  getRecurringTransactions,
+  getIncomeBreakdown,
+  getInvestmentAccounts,
+  getMonthlyComparison,
+  getUserProfile,
 ];
-
