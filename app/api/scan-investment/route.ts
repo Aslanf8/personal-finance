@@ -107,9 +107,8 @@ export async function POST(request: NextRequest) {
     const base64Image = image.startsWith('data:') ? image : `data:image/jpeg;base64,${image}`;
 
     const response = await openai.chat.completions.create({
-    //   model: 'gpt-4o-mini',
-    model: 'gpt-4.1',
-      max_tokens: 1000,
+      model: 'gpt-5.2',
+      max_completion_tokens: 1000,
       messages: [
         {
           role: 'system',

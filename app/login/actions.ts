@@ -5,17 +5,35 @@ import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 
 export async function login(formData: FormData) {
-  const supabase = await createClient()
+  const email = formData.get('email') as string
+  const password = formData.get('password') as string
 
-  const data = {
-    email: formData.get('email') as string,
-    password: formData.get('password') as string,
+  if (!email || !password) {
+    redirect('/login?error=Email and password are required')
   }
 
-  const { error } = await supabase.auth.signInWithPassword(data)
+  let supabase;
+  try {
+    supabase = await createClient()
+  } catch {
+    redirect('/login?error=Unable to connect to authentication service')
+  }
 
-  if (error) {
-    redirect('/login?error=Invalid email or password')
+  try {
+    const { error } = await supabase.auth.signInWithPassword({ email, password })
+
+    if (error) {
+      if (error.message.includes('Invalid login credentials')) {
+        redirect('/login?error=Invalid email or password')
+      }
+      redirect(`/login?error=${encodeURIComponent(error.message)}`)
+    }
+  } catch (err) {
+    const message = err instanceof Error ? err.message : 'Unknown error'
+    if (message.includes('fetch failed') || message.includes('ENOTFOUND')) {
+      redirect('/login?error=Unable to connect to server. Please check your internet connection.')
+    }
+    redirect(`/login?error=${encodeURIComponent(message)}`)
   }
 
   revalidatePath('/', 'layout')
